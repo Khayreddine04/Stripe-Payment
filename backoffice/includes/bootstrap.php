@@ -17,6 +17,7 @@ define("ADMIN_DIR",HOME_DIR."/backoffice");
 
 
 include_once HOME_DIR."/includes/dbconnect.php";
+include_once HOME_DIR."/includes/config.php";
 include_once HOME_DIR."/includes/_config.php";
 include_once ADMIN_DIR."/includes/config.php";
 include_once HOME_DIR."/includes/functions.php";
