@@ -20,7 +20,7 @@ logs/
 .env.local
 
 # Database configuration
-/includes/dbconnect.php
+# Keep includes/dbconnect.php tracked; production bootstrap requires it.
 
 # Environment files (continued)
 .env.production
