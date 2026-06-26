@@ -1,0 +1,66 @@
+# Create comprehensive .gitignore for PHP project
+cat > .gitignore << 'EOF'
+# Dependency directories
+/vendor/
+/node_modules/
+
+# TCPDF fonts (should be installed via Composer)
+/includes/tcpdf_new/fonts/
+
+# Upload directories
+
+/storage/
+
+# Log files
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+
+# Database configuration
+/includes/dbconnect.php
+
+# Environment files (continued)
+.env.production
+
+# Cache and temporary files
+/cache/
+/tmp/
+/sessions/
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Composer
+composer.lock
+composer.phar
+
+# Build artifacts
+/build/
+/dist/
+
+# XAMPP specific
+/xampp/
+/htdocs/
+
+# Large files that shouldn't be in repo
+*.zip
+*.tar
+*.gz
+*.pdf
+*.psd
+*.ai
+*.mp4
+*.mov
+.md
+EOF

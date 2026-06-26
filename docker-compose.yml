@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: stripe_payment_app
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    volumes:
+      - .:/app
+      - /app/vendor
+    networks:
+      - stripe_net
+
+  db:
+    image: mysql:8.0
+    container_name: stripe_payment_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: stripe_payment
+      MYSQL_USER: stripe_user
+      MYSQL_PASSWORD: stripe_password
+      MYSQL_ROOT_PASSWORD: stripe_root_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - stripe_net
+
+networks:
+  stripe_net:
+    driver: bridge
+
+volumes:
+  db_data:

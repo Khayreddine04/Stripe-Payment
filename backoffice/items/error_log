@@ -1,0 +1,7 @@
+[12-Sep-2025 23:01:46 UTC] PHP Fatal error:  Uncaught mysqli_sql_exception: Access denied for user 'root'@'localhost' (using password: YES) in /home/smartflutter2023/vip.cosmopredict.com/includes/dbconnect.php:30
+Stack trace:
+#0 /home/smartflutter2023/vip.cosmopredict.com/includes/dbconnect.php(30): mysqli->__construct()
+#1 /home/smartflutter2023/vip.cosmopredict.com/backoffice/includes/bootstrap.php(19): include_once('/home/smartflut...')
+#2 /home/smartflutter2023/vip.cosmopredict.com/backoffice/items/index.php(13): include_once('/home/smartflut...')
+#3 {main}
+  thrown in /home/smartflutter2023/vip.cosmopredict.com/includes/dbconnect.php on line 30

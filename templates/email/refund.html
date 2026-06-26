@@ -1,0 +1,59 @@
+{%amount%} - customer email
+{%fname%} - customer first name
+{%lname%} - customer last name
+{%transaction_id%} - transaction ID
+{%reason%} - refund reason
+<--start_template-->
+<div marginheight="0" marginwidth="0" style="background-color: #F8F8F8;padding: 50px 0;width: 100%">
+
+    <table align="center" style="border: 1px solid rgb(225, 225, 225); width: 460px; background-color: rgb(255, 255, 255); font-family: sans-serif; border-radius: 0px 0px 15px 15px;" cellpadding="0" cellspacing="0">
+        {%logo_block%}
+        <tr>
+            <td style="text-align: center">
+                <h2 style="color: #5FB75F; font-size: 30px; margin-bottom: 25px;">Payment Refunded</h2>
+
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: center">
+                <table width="100%" style="width: 100%">
+                    <tr>
+                        <td><hr style="border-width: 1px medium medium; border-style: solid none none; border-color: rgb(225, 225, 225); background-color: transparent;"></td>
+                        <td style="width: 30px;text-align: center"><img src="{%site_url%}/assets/images/hand.png"/></td>
+                        <td><hr style="border-width: 1px medium medium; border-style: solid none none; border-color: rgb(225, 225, 225); background-color: transparent;"></td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td style="text-align: center">
+                <p style="color: #000000;font-size: 14px;padding:18px 0 30px 0;margin: 0">Thank you for your business! </p>
+            </td>
+        </tr>
+
+        <tr>
+            <td style="text-align: center">
+                <div style="line-height:150%; width: 300px; margin: 0px auto 24px; padding: 25px 20px;background-color: #F9F9F9;text-align: left">
+                    <label style="color: #474444;font-size: 16px">Total Refunded:</label> <span style="color: #474444;font-size: 20px"><b>{%amount%}</b></span>
+
+                    <div style="color: #666;text-align: left">
+                        <br><br>We just wanted to let you know that we've refunded your payment by Stripe.<br><br>
+                        <label>Transaction ID: </label>{%transaction_id%}<br />
+                        {%reason%}
+                        <h3>Billing Information</h3>
+                        <label>Full name:</label>{%name%}<br>
+                        <label>Email:</label>{%email%}<br>
+                    </div>
+
+
+                </div>
+
+            </td>
+        </tr>
+
+
+    </table>
+
+</div>

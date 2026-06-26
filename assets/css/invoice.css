@@ -1,0 +1,115 @@
+@font-face {
+    font-family: 'Roboto Light';
+    src: url('../fonts/Roboto-Light-webfont.eot');
+    src: url('../fonts/Roboto-Light-webfont.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Roboto-Light-webfont.woff') format('woff'),
+    url('../fonts/Roboto-Light-webfont.ttf') format('truetype'),
+    url('../fonts/Roboto-Light-webfont.svg#robotolight') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+@font-face {
+    font-family: 'Roboto';
+    src: url('../fonts/Roboto-Regular-webfont.eot');
+    src: url('../fonts/Roboto-Regular-webfont.eot?#iefix') format('embedded-opentype'),
+    url('../fonts/Roboto-Regular-webfont.woff') format('woff'),
+    url('../fonts/Roboto-Regular-webfont.ttf') format('truetype'),
+    url('../fonts/Roboto-Regular-webfont.svg#robotoregular') format('svg');
+    font-weight: normal;
+    font-style: normal;
+}
+body {
+    font-family: "Roboto",sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 140%;
+}
+th, td strong {
+    font-size: 14px !important;
+    font-weight: 600;
+}
+a {
+    color: #1296d6;
+    font-family: "Roboto",sans-serif;
+    font-size: inherit;
+    font-weight: normal;
+    line-height: inherit;
+    text-decoration: none;
+}
+h4 {
+    color: #222222;
+    font-size: 14px;
+    text-shadow: 0 1px 0 #ffffff;
+    text-transform: uppercase;
+}
+.wrapper{}
+.wrapper h2{color: 	#33485d;text-transform: uppercase;font-size: 24px}
+
+.invoiceInfo .logo{max-width: 175px;border: 0 none;}
+.invoiceInfo{width: 100%}
+.invoiceInfo td{ width: 33%;text-align: left;vertical-align: top}
+.invoiceDetailsCont{margin-top: 20px}
+.invoiceDetails{
+    background-color: #ffffff;
+    border: 1px solid #d9e1e8;
+    border-collapse: separate;
+    border-radius: 4px;
+    border-spacing: 0;
+    width: 100%;
+    color: #444444;
+}
+.invoiceDetails th{
+    border: 1px solid #dddddd;
+    background: none repeat scroll 0 0 #ffffff;
+    border-radius: 0;
+    text-shadow: none;
+    padding: 7px 12px;
+    text-align: left;
+    font-size: 14px;
+}
+.invoiceDetails th:last-child{text-align: right;background-color: #dddddd}
+.invoiceDetails td:last-child{text-align: right}
+.invoiceDetails td{
+    border: 1px solid #dddddd;
+    background: none repeat scroll 0 0 #ffffff;
+    border-radius: 0;
+    padding: 7px 12px;
+    text-align: left;
+    font-size: 12px;
+
+}
+.amount{font-size: 14px;font-weight: 500}
+.invoiceTotalsCont{
+margin-left: 340px;
+margin-top: 20px;
+}
+.invoiceTotalsCont:after{clear: both}
+.invoiceTotals{
+    background-color: #ffffff;
+    border: 1px solid #d9e1e8;
+    border-collapse: separate;
+    border-radius: 4px;
+    border-spacing: 0;
+    width: 100%;
+    color: #444444;
+}
+.invoiceTotals td:last-child{text-align: right}
+.invoiceTotals td{
+    border: 1px solid #dddddd;
+    background: none repeat scroll 0 0 #ffffff;
+    border-radius: 0;
+    padding: 7px 12px;
+    text-align: left;
+    font-size: 12px;
+
+}
+.invoicePayOnline{
+float: right;
+}
+.invoicePayOnline ul{
+    list-style: outside none none;
+    margin-left: 0;
+    margin-top: 5px;
+}
+.invoicePayOnline ul li{display: inline-block;}
+.invoiceNotes{clear: both}

@@ -1,0 +1,122 @@
+{
+  "layout": {
+    "type": "two-column",
+    "columns": [
+      {
+        "position": "left",
+        "width": "60%",
+        "sections": [
+          {
+            "section": "Contact Information",
+            "order": 1,
+            "elements": [
+              {"type": "input", "label": "First Name"},
+              {"type": "input", "label": "Last Name"},
+              {"type": "input", "label": "Email"}
+            ],
+            "icons": [
+              {"type": "logo", "brands": ["Verified by VISA", "MasterCard SecureCode"]}
+            ]
+          },
+          {
+            "section": "Shipping Information",
+            "order": 2,
+            "elements": [
+              {"type": "input", "label": "Address"},
+              {"type": "input", "label": "Address 2", "optional": true},
+              {"type": "input", "label": "City"},
+              {"type": "input", "label": "Postal Code"},
+              {"type": "input", "label": "Phone Number"},
+              {"type": "dropdown", "label": "Select State"}
+            ],
+            "options": [
+              {"type": "checkbox", "label": "Billing address is the same as shipping"}
+            ]
+          },
+          {
+            "section": "Shipping Method",
+            "order": 3,
+            "elements": [
+              {"type": "label", "text": "Tracked delivery (shipped within 48H)"},
+              {"type": "cost", "text": "Free"}
+            ]
+          },
+          {
+            "section": "Payment",
+            "order": 4,
+            "info": "All transactions are secure and encrypted",
+            "elements": [
+              {
+                "type": "payment-form",
+                "fields": [
+                  {"type": "input", "label": "Card Number"},
+                  {"type": "input", "label": "MM/YY"},
+                  {"type": "input", "label": "cvv"}
+                ],
+                "icons": ["VISA", "MasterCard"]
+              },
+              {"type": "button", "label": "Proceed to payment", "style": "green"}
+            ],
+            "security": [
+              {"type": "icon", "label": "SSL-secured transaction"}
+            ]
+          }
+        ]
+      },
+      {
+        "position": "right",
+        "width": "40%",
+        "sections": [
+          {
+            "section": "Order Summary",
+            "order": 1,
+            "elements": [
+              {"type": "label", "text": "Product"},
+              {"type": "label", "text": "Product Title"},
+              {"type": "price", "amount": "$9.99"},
+              {
+                "type": "promo",
+                "fields": [
+                  {"type": "input", "label": "Promo Code"},
+                  {"type": "button", "label": "Apply", "style": "blue"}
+                ]
+              },
+              {
+                "table": {
+                  "rows": [
+                    {"label": "Subtotal", "value": "$9.99"},
+                    {"label": "Shipping", "value": "$0.00"},
+                    {"label": "Total", "value": "$9.99"}
+                  ]
+                }
+              }
+            ]
+          },
+          {
+            "section": "Why Choose Us",
+            "order": 2,
+            "elements": [
+              {
+                "type": "icon-text",
+                "icon": "box",
+                "heading": "15 years of experience serving your home",
+                "text": "We are committed to offering you unbeatable prices every day."
+              },
+              {
+                "type": "icon-text",
+                "icon": "money-back",
+                "heading": "30-Day Money-Back Guarantee",
+                "text": "If you're not satisfied with your product, we'll refund you in full—no questions asked."
+              }
+            ]
+          }
+        ],
+        "footer": [
+          {"type": "link", "label": "REFUND POLICY"},
+          {"type": "link", "label": "TERMS AND CONDITIONS OF SALE"},
+          {"type": "link", "label": "PRIVACY POLICY"}
+        ]
+      }
+    ]
+  }
+}

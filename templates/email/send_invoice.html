@@ -1,0 +1,87 @@
+{%invoice_id%} - invoice ID
+{%payment_url%} - url to payment page
+{%invoice_number%} - invoice number
+{%invoice_total%} - invoice total
+{%invoice_currency%} - invoice currency
+{%invoice_date%} - invoice due_date
+{%invoice_due%} - invoice due_date
+{%print_url%} - url to view invoice
+{%company_logo%} - company logo path
+{%company_name%} - company name
+{%customer_name%} - customer name
+{%site_url%} - site URL
+{%issue_email%} - email for issues
+
+<--start_template-->
+
+<div marginheight="0" marginwidth="0" style="background-color: #F8F8F8;padding: 50px 0;width: 100%">
+
+<table align="center" style="border: 1px solid rgb(225, 225, 225); width: 460px; background-color: rgb(255, 255, 255); font-family: sans-serif; border-radius: 0px 0px 15px 15px;" cellpadding="0" cellspacing="0">
+    {%logo_block%}
+    <tr>
+        <td style="text-align: center">
+            <h2 style="color: rgb(0, 0, 0); font-size: 30px; margin-bottom: 25px;">Invoice #{%invoice_number%}</h2>
+            <div style="color: #999999;font-size: 16px;text-align: center;padding-bottom: 30px;line-height: 150%">
+                for {%customer_name%}<br>
+                issued on {%invoice_date%}<br>
+                from <b>{%company_name%}</b>
+            </div>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center">
+        <table width="100%" style="width: 100%">
+            <tr>
+                <td><hr style="border-width: 1px medium medium; border-style: solid none none; border-color: rgb(225, 225, 225); background-color: transparent;"></td>
+                <td style="width: 30px;text-align: center"><img src="{%site_url%}/assets/images/hand.png" alt="Hand"/></td>
+                <td><hr style="border-width: 1px medium medium; border-style: solid none none; border-color: rgb(225, 225, 225); background-color: transparent;"></td>
+            </tr>
+
+        </table>
+         </td>
+    </tr>
+    <tr>
+        <td style="text-align: center">
+            <p style="color: #000000;font-size: 14px;padding:18px 0 30px 0;margin: 0">Thank you for your business! </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style="text-align: center">
+            <div style="margin: 0px auto 24px; padding: 25px 0px;background-color: #F9F9F9;width: 300px;text-align: center">
+                <label style="color: #474444;font-size: 16px">Total Due:</label> <span style="color: #474444;font-size: 20px"><b>{%invoice_total%}</b></span>
+
+                <a href="{%payment_url%}" style="background-color: rgb(95, 183, 95); width: 190px; height: 50px; line-height: 50px; color: rgb(255, 255, 255); font-size: 18px; border-radius: 3px; text-decoration: none; display: inline-block; margin: 15px 0px 10px;">
+                    <b>Pay Invoice</b>
+                </a>
+                <div style="color: #494444;font-size: 14px">Due by: <b>{%invoice_due%}</b></div>
+            </div>
+
+        </td>
+    </tr>
+
+    <tr>
+        <td style="border-top: 1px solid #E1E1E1;padding: 15px 0;text-align: center">
+
+            <img src="{%site_url%}/assets/images/icons/email_cards.png" alt="Cards"> {%paypal_logo%}
+
+        </td>
+
+    </tr>
+    <tr>
+        <td style="background-color: #F9F9F9;padding: 30px 0;text-align: center;font-size: 14px;color: #474444">
+            Thanks for your business. If this invoice was sent in error,<br>
+            please contact <a href="mailto:{%issue_email%}" style="color: #5FB75F"><b>{%issue_email%}</b></a>
+        </td>
+    </tr>
+    <tr>
+        <td style="background-color: #F0F0F0;padding: 13px 0;text-align: center;border-radius: 0px 0px 15px 15px;">
+            <a href="{%print_url%}" style="background-color: #E2E2E2;width: 114px;height: 32px;line-height: 32px;font-size: 13px;color: #656565;display: inline-block;text-decoration: none;border-radius: 3px">PRINT</a>
+        </td>
+    </tr>
+</table>
+    {%track_img%}
+</div>
+

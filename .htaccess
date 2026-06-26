@@ -1,0 +1,6 @@
+
+RewriteEngine on
+
+RewriteRule ^p/([\!\?0-9A-Za-z_-]+)$ get_admin_page.php?p=$1 [L]
+RewriteRule ^p/([\!\?0-9A-Za-z_-]+)/$ get_admin_page.php?p=$1 [L]
+

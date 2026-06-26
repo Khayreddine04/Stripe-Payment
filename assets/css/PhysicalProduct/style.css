@@ -1,0 +1,613 @@
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap");
+
+:root {
+  --primary-color: #7b68ee;
+  --secondary-color: #48d1cc;
+  --background-color: #f8f9fa;
+  --text-color: #333;
+  --border-color: #dee2e6;
+  --card-background: #fff;
+  --card-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  background-color: #f5f5f5;
+  color: #333;
+  line-height: 1.6;
+}
+
+.container-info {
+  max-width: 1200px;
+  margin: 0 auto;
+  background: white;
+  display: flex;
+  min-height: 100vh;
+}
+
+.checkout-section {
+  flex: 1;
+  padding: 40px;
+  border-right: 1px solid #e0e0e0;
+}
+
+.summary-section {
+  width: 400px;
+  padding: 40px;
+  background-color: #fafafa;
+}
+
+.payment-logos {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-bottom: 30px;
+}
+
+.payment-logo {
+  padding: 5px 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.visa-logo {
+  color: #1434cb;
+}
+
+.mastercard-logo {
+  color: #eb001b;
+}
+
+.section-title {
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.section-number {
+  margin-right: 5px;
+}
+
+.form-row {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 15px;
+}
+
+.form-group {
+  flex: 1;
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 5px;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #4a90e2;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-right: 8px;
+  cursor: pointer;
+  accent-color: #4a90e2;
+}
+
+.checkbox-group label {
+  font-size: 14px;
+  color: #333;
+  cursor: pointer;
+}
+
+.section-divider {
+  height: 1px;
+  background-color: #e0e0e0;
+  margin: 30px 0;
+}
+
+.shipping-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.shipping-option:hover {
+  border-color: #4a90e2;
+  background-color: #f8f9ff;
+}
+
+.shipping-option input[type="radio"] {
+  margin-right: 10px;
+  accent-color: #4a90e2;
+}
+
+.shipping-label {
+  flex: 1;
+  font-size: 14px;
+}
+
+.free-badge {
+  background-color: #4a90e2;
+  color: white;
+  padding: 4px 12px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-info {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.card-icons {
+  display: flex;
+  gap: 5px;
+  margin-top: 10px;
+}
+
+.card-icon {
+  width: 32px;
+  height: 20px;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: bold;
+}
+
+.visa {
+  background: linear-gradient(to right, #1434cb, #1a5bc4);
+  color: white;
+}
+.mastercard {
+  background: linear-gradient(to right, #eb001b, #f79e1b);
+  color: white;
+}
+.amex {
+  background: #006fcf;
+  color: white;
+}
+.discover {
+  background: #ff6000;
+  color: white;
+}
+
+.card-number-group {
+  position: relative;
+}
+
+.card-number-group input {
+  padding-right: 40px;
+}
+
+.lock-icon {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 16px;
+  color: #999;
+}
+
+.proceed-button {
+  width: 100%;
+  padding: 16px;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-top: 20px;
+}
+
+.proceed-button:hover {
+  background-color: #218838;
+}
+
+.security-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 15px;
+  font-size: 13px;
+  color: #666;
+}
+
+.shield-icon {
+  color: #28a745;
+  font-size: 16px;
+}
+
+.order-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 25px;
+  color: #000;
+}
+
+.product-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.product-name {
+  font-size: 14px;
+  color: #666;
+}
+
+.product-price {
+  font-size: 14px;
+  font-weight: 600;
+  color: #000;
+}
+
+.promo-section {
+  margin: 25px 0;
+}
+
+.promo-row {
+  display: flex;
+  gap: 10px;
+}
+
+.promo-input {
+  flex: 1;
+  padding: 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.apply-button {
+  padding: 12px 24px;
+  background-color: #4a90e2;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.apply-button:hover {
+  background-color: #3a7bc8;
+}
+
+.cost-breakdown {
+  margin: 25px 0;
+}
+
+.cost-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 10px 0;
+  font-size: 14px;
+}
+
+.cost-label {
+  color: #666;
+}
+
+.cost-value {
+  color: #333;
+}
+
+.total-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 0;
+  font-size: 16px;
+  font-weight: 600;
+  border-top: 2px solid #e0e0e0;
+  margin-top: 10px;
+}
+
+.why-choose {
+  margin-top: 30px;
+  padding-top: 25px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.why-choose-title {
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  color: #000;
+}
+
+.trust-badge {
+  display: flex;
+  gap: 15px;
+  margin-bottom: 20px;
+  align-items: flex-start;
+}
+
+.badge-icon {
+  width: 50px;
+  height: 50px;
+  flex-shrink: 0;
+}
+
+.badge-content {
+  flex: 1;
+}
+
+.badge-title {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #000;
+}
+
+.badge-description {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+}
+
+/* Payment Button Styles */
+#submit-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 28px;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.5;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+  width: 100%;
+  margin: 10px 0;
+  position: relative;
+  overflow: hidden;
+}
+
+#submit-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+}
+
+#submit-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.1), 0 1px 2px -1px rgba(0, 0, 0, 0.06);
+}
+
+#submit-button:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+  opacity: 0.8;
+}
+
+#submit-button #button-text {
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+#submit-button #spinner {
+  margin-left: 10px;
+  color: white;
+  display: none;
+}
+
+#submit-button.loading #button-text {
+  opacity: 0.8;
+}
+
+#submit-button.loading #spinner {
+  display: block;
+}
+
+/* Ripple effect */
+#submit-button::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+  background-repeat: no-repeat;
+  background-position: 50%;
+  transform: scale(10, 10);
+  opacity: 0;
+  transition: transform 0.5s, opacity 1s;
+}
+
+#submit-button:active::after {
+  transform: scale(0, 0);
+  opacity: 0.3;
+  transition: 0s;
+}
+
+/* Stripe Card Input Styling */
+.StripeElement {
+  height: 44px;
+  padding: 10px 15px;
+  width: 100%;
+  color: #1a1f36;
+  background-color: #fff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.StripeElement--focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  outline: none;
+}
+
+.StripeElement--invalid {
+  border-color: #ef4444;
+}
+
+.StripeElement--webkit-autofill {
+  background-color: #fef3c7 !important;
+}
+
+/* Card input container */
+#card-number-element,
+#card-expiry-element,
+#card-cvc-element {
+  margin-bottom: 16px;
+  padding: 11px;
+  border-radius: 6px;
+  background: #fff;
+}
+
+/* Form group styling for card elements */
+.payment-form .form-group {
+  margin-bottom: 20px;
+}
+
+.payment-form .form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+}
+
+/* Card icons container */
+.card-icons {
+  display: flex;
+  gap: 8px;
+  margin-top: 5px;
+}
+
+/* Individual card icon */
+.card-icon {
+  width: 36px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9ca3af;
+  background: #f3f4f6;
+  border-radius: 3px;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+}
+
+/* Card brand icons when active */
+.card-icon.visla {
+  color: #1a1f36;
+  background: #f3f4f6;
+  border: 1px solid #d1d5db;
+}
+
+/* Card error message */
+#card-errors {
+  color: #ef4444;
+  font-size: 13px;
+  line-height: 1.5;
+  margin-top: 8px;
+  min-height: 20px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .payment-form .form-row {
+    flex-direction: column;
+    gap: 16px;
+  }
+  
+  .payment-form .form-row .form-group {
+    width: 100%;
+  }
+}
+
+@media (max-width: 968px) {
+  .container-info {
+    flex-direction: column;
+  }
+
+  .checkout-section {
+    border-right: none;
+    border-bottom: 1px solid #e0e0e0;
+  }
+
+  .summary-section {
+    width: 100%;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
+  .checkout-section,
+  .summary-section {
+    padding: 20px;
+  }
+}
