@@ -1,10 +1,10 @@
 <?php
 
                         //EDIT ONLY FOLLOWING 5 LINES
-                        define("DB_HOST", 'db'); //hostname
-                        define("DB_USER", 'stripe_user'); // username
-                        define("DB_PASS", 'stripe_password'); // password
-                        define("DB_NAME", 'stripe_payment'); //database name
+                        define("DB_HOST", 'cosmopredict-test-97kw9b'); //hostname
+                        define("DB_USER", 'new-db'); // username
+                        define("DB_PASS", 'q8IY4Hz8ixxz1V'); // password
+                        define("DB_NAME", 'new-stripe'); //database name
                         define("DB_CHARSET", 'utf8mb4');
                         define("DB_PREFIX", 'pt_');
 
