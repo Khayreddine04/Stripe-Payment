@@ -7,7 +7,7 @@
                         define("DB_NAME", getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: 'new-stripe')); //database name
                         define("DB_PORT", (int) (getenv('DB_PORT') ?: 3306));
                         define("DB_CHARSET", 'utf8mb4');
-                        define("DB_PREFIX", 'pt_');
+                        define("DB_PREFIX", getenv('DB_PREFIX') ?: 'vcp_pt_');
 
                         $db_pr=DB_PREFIX;
 
