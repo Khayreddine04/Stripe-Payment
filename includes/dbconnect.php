@@ -1,9 +1,9 @@
 <?php
 
                         //EDIT ONLY FOLLOWING 5 LINES
-                        define("DB_HOST", getenv('DB_HOST') ?: 'cosmopredict-test-97kw9b'); //hostname
+                        define("DB_HOST", getenv('DB_HOST') ?: 'cosmopredict-new-jq5zfp'); //hostname
                         define("DB_USER", getenv('DB_USERNAME') ?: (getenv('DB_USER') ?: 'new-db')); // username
-                        define("DB_PASS", getenv('DB_PASSWORD') ?: (getenv('DB_PASS') ?: 'q8IY4Hz8ixxz1V')); // password
+                        define("DB_PASS", getenv('DB_PASSWORD') ?: (getenv('DB_PASS') ?: 'QgTQ6QbmpxM0e')); // password
                         define("DB_NAME", getenv('DB_DATABASE') ?: (getenv('DB_NAME') ?: 'new-stripe')); //database name
                         define("DB_PORT", (int) (getenv('DB_PORT') ?: 3306));
                         define("DB_CHARSET", 'utf8mb4');
