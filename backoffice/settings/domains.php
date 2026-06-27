@@ -115,6 +115,53 @@ if ($featureReady && $action === "set_domain_status") {
     }
 }
 
+if ($featureReady && $action === "hard_delete_domain") {
+    if ($domainId <= 0) {
+        $a->addError("Invalid domain ID.");
+    } else {
+        $itemDomainsTable = $db_pr . "item_domains";
+        $invoicesTable = $db_pr . "invoices";
+
+        $resDomain = $a->query("SELECT id, domain, is_active FROM {$domainsTable} WHERE id='{$domainId}' LIMIT 1");
+        if (!$resDomain || $resDomain->error || $resDomain->count < 1) {
+            $a->addError("Domain not found.");
+        } else {
+            $domainRow = $resDomain->result_row();
+            $domainHost = (string)$domainRow['domain'];
+
+            if ($domainRow['is_active'] === '1') {
+                $a->addError("Deactivate domain first, then hard delete.");
+            }
+
+            if (!$a->error && pt_admin_table_exists($a, $itemDomainsTable)) {
+                $mapCheck = $a->query("SELECT id FROM {$itemDomainsTable} WHERE domain_id='{$domainId}' LIMIT 1");
+                if ($mapCheck && !$mapCheck->error && $mapCheck->count > 0) {
+                    $a->addError("Domain is mapped to one or more items. Unassign it first.");
+                }
+            }
+
+            if (!$a->error && pt_admin_table_exists($a, $invoicesTable)) {
+                $safeDomain = addslashes($domainHost);
+                $invCheck = $a->query("SELECT idInvoice FROM {$invoicesTable} WHERE checkout_domain='{$safeDomain}' LIMIT 1");
+                if ($invCheck && !$invCheck->error && $invCheck->count > 0) {
+                    $a->addError("Domain is referenced by invoice history and cannot be hard deleted.");
+                }
+            }
+
+            $normalizedDefault = pt_admin_normalize_domain((string)$settings->get('primary_checkout_domain'));
+            if (!$a->error && $normalizedDefault !== '' && $normalizedDefault === pt_admin_normalize_domain($domainHost)) {
+                $a->addError("Domain is set as default checkout domain. Change default first.");
+            }
+
+            if (!$a->error) {
+                $a->query("DELETE FROM {$domainsTable} WHERE id='{$domainId}' LIMIT 1");
+                $a->addSuccess("Domain hard deleted.");
+                st_do_action('add_user_log', "Hard deleted domain id {$domainId}: {$domainHost}");
+            }
+        }
+    }
+}
+
 $domains = array();
 if ($featureReady) {
     $resDomains = $a->query("SELECT id, domain, is_active FROM {$domainsTable} ORDER BY domain ASC");
@@ -215,6 +262,13 @@ $a->getHeader();
                                                         <?php echo $isActive ? 'Deactivate' : 'Activate' ?>
                                                     </button>
                                                 </form>
+                                                <?php if (!$isActive) { ?>
+                                                    <form method="post" style="display:inline-block;" onsubmit="return confirm('Hard delete this domain permanently?');">
+                                                        <input type="hidden" name="action" value="hard_delete_domain">
+                                                        <input type="hidden" name="domain_id" value="<?php echo (int)$row['id'] ?>">
+                                                        <button type="submit" class="btn btn-xs btn-danger">Hard Delete</button>
+                                                    </form>
+                                                <?php } ?>
                                             </td>
                                         </tr>
                                 <?php }
