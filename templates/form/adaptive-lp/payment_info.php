@@ -15,9 +15,8 @@ foreach ($landingPages as $candidate) {
 }
 
 $title = $item['title'] ?? urldecode($_GET['productname'] ?? 'Special Offer');
-$price = $item['price'] ?? urldecode($_GET['price'] ?? ($pt_amount ?? '0.00'));
-$upfrontPrice = $adaptive_upfront_amount ?? urldecode($_GET['price'] ?? ($item['price'] ?? '0.00'));
-$upfrontCurrencySymbol = $adaptive_upfront_currency_symbol ?? ($pt_currency_symbol ?: '$');
+$upfrontPrice = $adaptive_upfront_amount ?? '';
+$upfrontCurrencySymbol = $adaptive_upfront_currency_symbol ?? '';
 $inventory = $item['inventory'] ?? 3;
 $features = isset($item['features']) && is_array($item['features']) ? $item['features'] : [];
 $footer = isset($item['footer']) && is_array($item['footer']) ? $item['footer'] : [];
@@ -53,7 +52,7 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
             <div class="product-shot-wrap">
                 <div class="price-badge">
                     <small>Pay Only</small>
-                    <span><span class="adaptive-upfront-currency-symbol"><?php echo htmlspecialchars($upfrontCurrencySymbol, ENT_QUOTES); ?></span><span class="adaptive-upfront-amount"><?php echo htmlspecialchars(number_format((float)$upfrontPrice, 2, '.', ''), ENT_QUOTES); ?></span></span>
+                    <span><span class="adaptive-upfront-currency-symbol"><?php echo htmlspecialchars($upfrontCurrencySymbol, ENT_QUOTES); ?></span><span class="adaptive-upfront-amount"><?php echo $upfrontPrice !== '' ? htmlspecialchars(number_format((float)$upfrontPrice, 2, '.', ''), ENT_QUOTES) : ''; ?></span></span>
                 </div>
                 <div class="product-shot" role="img" aria-label="<?php echo htmlspecialchars($title, ENT_QUOTES); ?> preview" style="background-image: url('<?php echo htmlspecialchars($imageUrl, ENT_QUOTES); ?>');"></div>
             </div>

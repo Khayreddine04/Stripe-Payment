@@ -6,8 +6,8 @@ $amountValue = htmlspecialchars($pt_amount ?? ($post['pt_amount'] ?? '0.00'), EN
 $currencyValue = htmlspecialchars($pt_currency ?? ($post['pt_currency'] ?? $currency_text ?? 'USD'), ENT_QUOTES);
 $currencySymbolValue = htmlspecialchars($pt_currency_symbol ?? $display_currency ?? '$', ENT_QUOTES);
 $currencyPositionValue = htmlspecialchars($pt_currency_position ?? $currency_position ?? 'before', ENT_QUOTES);
-$upfrontAmountValue = htmlspecialchars(number_format((float)($adaptive_upfront_amount ?? $amountValue), 2, '.', ''), ENT_QUOTES);
-$upfrontCurrencySymbolValue = htmlspecialchars($adaptive_upfront_currency_symbol ?? $currencySymbolValue, ENT_QUOTES);
+$upfrontAmountValue = isset($adaptive_upfront_amount) ? htmlspecialchars(number_format((float)$adaptive_upfront_amount, 2, '.', ''), ENT_QUOTES) : '';
+$upfrontCurrencySymbolValue = htmlspecialchars($adaptive_upfront_currency_symbol ?? '', ENT_QUOTES);
 $basePath = 'templates/form/adaptive-lp';
 ?>
 
