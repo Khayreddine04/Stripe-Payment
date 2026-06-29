@@ -44,7 +44,7 @@ if ($token === false) {
     pt_go_block_request();
 }
 
-$protocol = (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https' || ($_SERVER['HTTPS'] ?? '') === 'on') ? 'https' : 'http';
+$protocol = pt_get_request_protocol();
 
 $query = array(
     'service' => $itemId,
@@ -56,8 +56,8 @@ if ($idInvoice > 0) {
     $query['idInvoice'] = $idInvoice;
 }
 
-// Keep common tracking params in the redirect.
-$passthroughKeys = array('clickid', 'source', 'ctc');
+// Keep common template and tracking params in the redirect.
+$passthroughKeys = array('lp', 'country', 'clickid', 'source', 'ctc');
 foreach ($passthroughKeys as $key) {
     $val = trim((string)$c->esc($key, ''));
     if ($val !== '') {

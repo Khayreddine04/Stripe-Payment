@@ -594,31 +594,35 @@ if (!function_exists('pt_select_rotated_domain')) {
             return false;
         }
 
+        $domains = pt_get_active_domains_for_item($itemId);
+        if (empty($domains)) {
+            $fallback = pt_get_default_checkout_domain();
+            if ($fallback !== false) {
+                $domains = array($fallback);
+            }
+        }
+
+        if (empty($domains)) {
+            return false;
+        }
+
         if ($idInvoice > 0) {
             $existing = pt_get_invoice_checkout_domain($idInvoice);
             if ($existing !== false) {
-                return $existing;
+                foreach ($domains as $domain) {
+                    if (pt_hosts_match($existing, $domain)) {
+                        return $existing;
+                    }
+                }
             }
         }
 
-        $domains = pt_get_active_domains_for_item($itemId);
-        if (!empty($domains)) {
-            $selected = $domains[array_rand($domains)];
-            if ($idInvoice > 0) {
-                pt_set_invoice_checkout_domain($idInvoice, $selected);
-            }
-            return $selected;
+        $selected = $domains[array_rand($domains)];
+        if ($idInvoice > 0) {
+            pt_set_invoice_checkout_domain($idInvoice, $selected);
         }
 
-        $fallback = pt_get_default_checkout_domain();
-        if ($fallback !== false) {
-            if ($idInvoice > 0) {
-                pt_set_invoice_checkout_domain($idInvoice, $fallback);
-            }
-            return $fallback;
-        }
-
-        return false;
+        return $selected;
     }
 }
 
@@ -718,6 +722,93 @@ if (!function_exists('pt_verify_domain_redirect_token')) {
     }
 }
 
+if (!function_exists('pt_get_request_protocol')) {
+    function pt_get_request_protocol()
+    {
+        $forwardedProto = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+        if ($forwardedProto !== '') {
+            $parts = explode(',', $forwardedProto);
+            $forwardedProto = strtolower(trim($parts[0]));
+            if (in_array($forwardedProto, array('http', 'https'), true)) {
+                return $forwardedProto;
+            }
+        }
+
+        return (($_SERVER['HTTPS'] ?? '') === 'on') ? 'https' : 'http';
+    }
+}
+
+if (!function_exists('pt_get_current_request_path')) {
+    function pt_get_current_request_path($fallback = '/index.php')
+    {
+        $path = (string)parse_url((string)($_SERVER['REQUEST_URI'] ?? ''), PHP_URL_PATH);
+        if ($path === '') {
+            $path = (string)($_SERVER['SCRIPT_NAME'] ?? '');
+        }
+        if ($path === '') {
+            $path = $fallback;
+        }
+        if ($path[0] !== '/') {
+            $path = '/' . $path;
+        }
+
+        return $path;
+    }
+}
+
+if (!function_exists('pt_redirect_to_checkout_domain_or_false')) {
+    function pt_redirect_to_checkout_domain_or_false($itemId, $idInvoice = 0, $targetHost = false, $path = null)
+    {
+        $itemId = trim((string)$itemId);
+        $idInvoice = (int)$idInvoice;
+        $currentHost = pt_get_request_host();
+        $targetHost = $targetHost === false ? pt_select_rotated_domain($itemId, $idInvoice) : pt_normalize_host($targetHost);
+
+        if ($itemId === '' || $currentHost === '' || $targetHost === false || $targetHost === '') {
+            return false;
+        }
+
+        if (pt_hosts_match($currentHost, $targetHost) || headers_sent()) {
+            return false;
+        }
+
+        $token = pt_build_domain_redirect_token($itemId, $idInvoice, $targetHost, 300);
+        if ($token === false) {
+            return false;
+        }
+
+        $query = array();
+        $passthroughKeys = array('service', 'item_id', 'idInvoice', 'lp', 'country', 'ctc', 'clickid', 'source', 'from_go');
+        foreach ($passthroughKeys as $key) {
+            if (isset($_GET[$key]) && trim((string)$_GET[$key]) !== '') {
+                $query[$key] = trim((string)$_GET[$key]);
+            }
+        }
+
+        $query['service'] = $itemId;
+        if ($idInvoice > 0) {
+            $query['idInvoice'] = $idInvoice;
+        } else {
+            unset($query['idInvoice']);
+        }
+        $query['drt'] = $token;
+        $query['from_go'] = 1;
+
+        $redirectPath = $path === null ? pt_get_current_request_path('/index.php') : (string)$path;
+        if ($redirectPath === '') {
+            $redirectPath = '/index.php';
+        }
+        if ($redirectPath[0] !== '/') {
+            $redirectPath = '/' . $redirectPath;
+        }
+
+        $destination = pt_get_request_protocol() . '://' . $targetHost . $redirectPath . '?' . http_build_query($query);
+        header('Cache-Control: no-store, no-cache, must-revalidate, max-age=0');
+        header('Location: ' . $destination, true, 302);
+        exit;
+    }
+}
+
 if (!function_exists('pt_forbidden_exit')) {
     function pt_forbidden_exit()
     {
@@ -771,7 +862,32 @@ if (!function_exists('pt_enforce_domain_access_or_exit')) {
         }
 
         if (!$isAllowed) {
+            if (pt_redirect_to_checkout_domain_or_false($itemId, $idInvoice)) {
+                return true;
+            }
             pt_forbidden_exit();
+        }
+
+        if ($idInvoice > 0) {
+            $savedHost = pt_get_invoice_checkout_domain($idInvoice);
+            if ($savedHost !== false && !pt_hosts_match($savedHost, $currentHost)) {
+                $savedHostAllowed = false;
+                foreach ($allowedDomains as $allowedDomain) {
+                    if (pt_hosts_match($savedHost, $allowedDomain)) {
+                        $savedHostAllowed = true;
+                        break;
+                    }
+                }
+
+                if ($savedHostAllowed) {
+                    if (pt_redirect_to_checkout_domain_or_false($itemId, $idInvoice, $savedHost)) {
+                        return true;
+                    }
+                    pt_forbidden_exit();
+                }
+
+                pt_set_invoice_checkout_domain($idInvoice, $currentHost);
+            }
         }
 
         if ($requireToken) {
@@ -793,10 +909,6 @@ if (!function_exists('pt_enforce_domain_access_or_exit')) {
 
         if ($idInvoice > 0) {
             $savedHost = pt_get_invoice_checkout_domain($idInvoice);
-            if ($savedHost !== false && !pt_hosts_match($savedHost, $currentHost)) {
-                pt_forbidden_exit();
-            }
-
             if ($savedHost === false) {
                 pt_set_invoice_checkout_domain($idInvoice, $currentHost);
             }
