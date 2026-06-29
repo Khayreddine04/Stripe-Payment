@@ -9,21 +9,6 @@
  * Copyright:   (c) CriticalGears.io
  */
 
-// Include error handler first
-@include_once "includes/error_handler.php";
-
-// Include bootstrap
-include_once "includes/bootstrap.php";
-include_once "includes/countries.php";
-
-// Defensive initialization to avoid partial rendering when globals are not pre-bound.
-if (!isset($settings) || !is_object($settings)) {
-    $settings = PT_Settings::instance();
-}
-if (!isset($user) || !is_object($user)) {
-    $user = PT_User::instance();
-}
-
 $__adaptiveLpId = trim((string)($_GET['lp'] ?? ''));
 $__adaptiveLpDataFile = __DIR__ . '/templates/form/adaptive-lp/data/landing-pages.json';
 $__adaptiveLpExists = false;
