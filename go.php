@@ -39,7 +39,7 @@ if ($targetHost === false) {
     pt_go_block_request();
 }
 
-$token = pt_build_domain_redirect_token($itemId, $idInvoice, $targetHost, 300);
+$token = pt_build_domain_redirect_token($itemId, $idInvoice, $targetHost);
 if ($token === false) {
     pt_go_block_request();
 }

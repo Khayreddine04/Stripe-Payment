@@ -638,12 +638,11 @@ if (!function_exists('pt_get_domain_token_secret')) {
 }
 
 if (!function_exists('pt_build_domain_redirect_token')) {
-    function pt_build_domain_redirect_token($itemId, $idInvoice, $domain, $ttlSeconds = 300)
+    function pt_build_domain_redirect_token($itemId, $idInvoice, $domain)
     {
         $itemId = trim((string)$itemId);
         $idInvoice = (int)$idInvoice;
         $domain = pt_normalize_host($domain);
-        $ttlSeconds = max(1, (int)$ttlSeconds);
 
         if ($itemId === '' || $domain === '') {
             return false;
@@ -653,7 +652,6 @@ if (!function_exists('pt_build_domain_redirect_token')) {
             'item_id' => $itemId,
             'id_invoice' => $idInvoice,
             'domain' => $domain,
-            'exp' => time() + $ttlSeconds,
             'nonce' => bin2hex(random_bytes(8))
         );
 
@@ -698,11 +696,7 @@ if (!function_exists('pt_verify_domain_redirect_token')) {
         }
 
         $payload = json_decode($payloadJson, true);
-        if (!is_array($payload) || !isset($payload['exp'])) {
-            return false;
-        }
-
-        if ((int)$payload['exp'] < time()) {
+        if (!is_array($payload)) {
             return false;
         }
 
@@ -772,7 +766,7 @@ if (!function_exists('pt_redirect_to_checkout_domain_or_false')) {
             return false;
         }
 
-        $token = pt_build_domain_redirect_token($itemId, $idInvoice, $targetHost, 300);
+        $token = pt_build_domain_redirect_token($itemId, $idInvoice, $targetHost);
         if ($token === false) {
             return false;
         }
