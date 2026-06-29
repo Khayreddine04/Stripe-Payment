@@ -932,8 +932,8 @@ if ($pt_action == 'do_payment') {
 
 $header->render(true);
 
-// Hide header and footer visually for index2.php
-echo '<style>.header { display: none !important; }</style>';
+// Hide header and adaptive warning notices on this dedicated LP route.
+echo '<style>.header, .alert.alert-warning.alert-dismissible.fade.in { display: none !important; }</style>';
 
 if ($https) {
     ?>
