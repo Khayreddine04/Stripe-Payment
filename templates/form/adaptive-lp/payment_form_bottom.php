@@ -95,6 +95,13 @@ $footer = isset($lpItem['footer']) && is_array($lpItem['footer']) ? $lpItem['foo
             $('input[name="pt_currency_symbol"]').val(symbol);
             $('.pt_currency_symbol').text(symbol);
             $('.total-amount').text(parseFloat(amount || 0).toFixed(2));
+
+            if (data.upfront_amount) {
+                var upfrontAmount = data.upfront_amount.amount_numeric || data.upfront_amount.amount;
+                var upfrontSymbol = data.upfront_amount.currency_symbol || data.upfront_amount.currency_code || '';
+                $('.adaptive-upfront-currency-symbol').text(upfrontSymbol);
+                $('.adaptive-upfront-amount').text(parseFloat(upfrontAmount || 0).toFixed(2));
+            }
         }, 'json');
     }
 

@@ -423,35 +423,27 @@ $ctcForCurrency = !empty($_GET['ctc']) ? $_GET['ctc'] : '2'; // Default to '2' a
 $serviceIdForCurrency = $serviceId;
 
 $fetchedCurrencyData = null;
-if (!empty($_SESSION['api_currency_data'])) {
-    $fetchedCurrencyData = $_SESSION['api_currency_data'];
-    error_log('index1.php: $fetchedCurrencyData from session: ' . print_r($fetchedCurrencyData, true));
-} else if (!empty($countryCodeForCurrency) && !empty($ctcForCurrency) && !empty($serviceIdForCurrency)) {
+if (!empty($countryCodeForCurrency) && !empty($ctcForCurrency) && !empty($serviceIdForCurrency)) {
     try {
         $fetchedCurrencyData = getConvenientCurrencyData($countryCodeForCurrency, $ctcForCurrency, $serviceIdForCurrency);
         $_SESSION['api_currency_data'] = $fetchedCurrencyData;
-        error_log('Fetched currencyData in index1.php: ' . print_r($fetchedCurrencyData, true));
+        error_log('Fetched adaptive LP currencyData in index6.php: ' . print_r($fetchedCurrencyData, true));
 
-        // Override pt_currency, pt_currency_symbol, pt_currency_position with fetched data
         if (isset($fetchedCurrencyData['subscription_amount']['currency_code'])) {
             $pt_currency = $fetchedCurrencyData['subscription_amount']['currency_code'];
         }
         if (isset($fetchedCurrencyData['subscription_amount']['currency_symbol'])) {
             $pt_currency_symbol = $fetchedCurrencyData['subscription_amount']['currency_symbol'];
         }
-        // Assuming currency_position is 'before' or 'after' and not directly returned by getConvenientCurr.php
-        // If it is returned, use it. Otherwise, keep the default or derive it.
-        // For now, we'll assume it's not directly returned and keep the existing logic for position.
     } catch (Throwable $e) {
-        error_log('Error fetching convenient currency data in index1.php: ' . $e->getMessage());
-        // Optionally, add a user-facing error message
+        error_log('Error fetching convenient currency data in index6.php: ' . $e->getMessage());
         $c->addWarning('<span data-i18n="currency_data_unavailable">Could not fetch real-time currency data. Using default values.</span>');
     }
 }
 
-error_log('index1.php - pt_currency: ' . $pt_currency);
-error_log('index1.php - pt_currency_symbol: ' . $pt_currency_symbol);
-error_log('index1.php - pt_currency_position: ' . $pt_currency_position);
+error_log('index6.php - pt_currency: ' . $pt_currency);
+error_log('index6.php - pt_currency_symbol: ' . $pt_currency_symbol);
+error_log('index6.php - pt_currency_position: ' . $pt_currency_position);
 
 
 // Create footer with trial information after service is loaded
@@ -681,12 +673,17 @@ if (isset($fetchedCurrencyData['success']) && $fetchedCurrencyData['success']) {
 }
 
 // payment information template
+$adaptiveUpfrontAmount = $fetchedCurrencyData['upfront_amount']['amount_numeric'] ?? null;
+$adaptiveUpfrontCurrencySymbol = $fetchedCurrencyData['upfront_amount']['currency_symbol'] ?? null;
+
 $payment_info_data = array_merge($c->post, [
     'selected_theme' => $__theme,
     'post' => $c->post,
     'pt_currency' => $pt_currency,
     'pt_currency_symbol' => $pt_currency_symbol,
-    'pt_currency_position' => $pt_currency_position
+    'pt_currency_position' => $pt_currency_position,
+    'adaptive_upfront_amount' => $adaptiveUpfrontAmount,
+    'adaptive_upfront_currency_symbol' => $adaptiveUpfrontCurrencySymbol
 ]);
 
 // Add amount to payment info data if set
