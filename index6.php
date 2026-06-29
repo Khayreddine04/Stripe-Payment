@@ -24,6 +24,29 @@ if (!isset($user) || !is_object($user)) {
     $user = PT_User::instance();
 }
 
+$__adaptiveLpId = trim((string)($_GET['lp'] ?? ''));
+$__adaptiveLpDataFile = __DIR__ . '/templates/form/adaptive-lp/data/landing-pages.json';
+$__adaptiveLpExists = false;
+
+if ($__adaptiveLpId !== '' && is_file($__adaptiveLpDataFile)) {
+    $__adaptiveLpPayload = json_decode(file_get_contents($__adaptiveLpDataFile), true);
+    $__adaptiveLpPages = isset($__adaptiveLpPayload['landingPages']) && is_array($__adaptiveLpPayload['landingPages'])
+        ? $__adaptiveLpPayload['landingPages']
+        : [];
+
+    foreach ($__adaptiveLpPages as $__adaptiveLpPage) {
+        if ((string)($__adaptiveLpPage['id'] ?? '') === $__adaptiveLpId) {
+            $__adaptiveLpExists = true;
+            break;
+        }
+    }
+}
+
+if (!$__adaptiveLpExists) {
+    http_response_code(200);
+    exit;
+}
+
 $__ptDomainItemId = trim((string)($_GET['service'] ?? $_GET['item_id'] ?? ''));
 $__ptDomainInvoiceId = isset($_GET['idInvoice']) ? (int)$_GET['idInvoice'] : 0;
 $__ptDomainToken = trim((string)($_GET['drt'] ?? $_POST['drt'] ?? ''));
