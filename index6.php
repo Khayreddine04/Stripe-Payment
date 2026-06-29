@@ -32,6 +32,14 @@ if (!$__adaptiveLpExists) {
     exit;
 }
 
+// Load core functions before enforcing rotated-domain access.
+@include_once "includes/error_handler.php";
+if (!@include_once("includes/bootstrap.php")) {
+    header('HTTP/1.1 404 Not Found');
+    exit;
+}
+include_once "includes/countries.php";
+
 $__ptDomainItemId = trim((string)($_GET['service'] ?? $_GET['item_id'] ?? ''));
 $__ptDomainInvoiceId = isset($_GET['idInvoice']) ? (int)$_GET['idInvoice'] : 0;
 $__ptDomainToken = trim((string)($_GET['drt'] ?? $_POST['drt'] ?? ''));
@@ -117,11 +125,6 @@ function handleError($message, $code = 400, $logError = true)
 
 // Initialize custom mode flag
 $isCustomMode = false;
-
-// Include bootstrap file
-if (!@include_once("includes/bootstrap.php")) {
-    handleError("<span data-i18n=\"system_configuration_error\">System configuration error</span>", 500);
-}
 
 if (!isset($settings) || !is_object($settings)) {
     $settings = PT_Settings::instance();
