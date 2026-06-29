@@ -23,7 +23,7 @@ $basePath = 'templates/form/adaptive-lp';
     <div class="adaptive-terms">
         <label>
             <input type="checkbox" name="pt_terms" id="pt_terms" value="1" title="<?php _tr("Please accept terms and conditions to proceed.") ?>">
-            I agree with <a href="javascript:;" data-toggle="modal" data-target="#terms_and_conditions">terms and conditions</a>
+            <span data-i18n="i_agree_with">I agree with</span> <a href="javascript:;" data-toggle="modal" data-target="#terms_and_conditions" data-i18n="terms_and_conditions">terms and conditions</a>
         </label>
     </div>
 <?php } ?>
@@ -41,7 +41,7 @@ $basePath = 'templates/form/adaptive-lp';
 
 <div id="payment-request-button"></div>
 
-<p class="secure-line">Secure 256 Bit Encrypted Connection</p>
+<p class="secure-line" data-i18n="secure_connection">Secure 256 Bit Encrypted Connection</p>
 <div class="trust-badges">
     <img src="<?php echo $basePath; ?>/assets/mcaffe.svg" alt="McAfee SECURE" class="badge-icon">
     <img src="<?php echo $basePath; ?>/assets/norton.svg" alt="Norton Secured" class="badge-icon">

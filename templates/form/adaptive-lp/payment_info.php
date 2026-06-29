@@ -43,15 +43,15 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
 <link rel="stylesheet" href="<?php echo $basePath; ?>/assets/styles.css?v=<?php echo rand(1, 9999); ?>">
 
 <section class="offer-page adaptive-offer-page" style="--stock-color: <?php echo htmlspecialchars($stockColor, ENT_QUOTES); ?>; --button-color: <?php echo htmlspecialchars($buttonColor, ENT_QUOTES); ?>;">
-    <div class="offer-page__bar"><?php echo htmlspecialchars($site['offerLabel'] ?? 'Special Offer', ENT_QUOTES); ?></div>
-    <div class="offer-page__trail"><?php echo htmlspecialchars($site['offerTrailPrefix'] ?? "Today's Offer", ENT_QUOTES); ?> &gt; <?php echo htmlspecialchars($title, ENT_QUOTES); ?></div>
-    <div class="offer-page__timer" id="adaptive-countdown"><?php echo htmlspecialchars($site['deadlineText'] ?? 'Attention, this offer expires in:', ENT_QUOTES); ?> 04:55</div>
+    <div class="offer-page__bar" data-i18n="special_offer"><?php echo htmlspecialchars($site['offerLabel'] ?? 'Special Offer', ENT_QUOTES); ?></div>
+    <div class="offer-page__trail"><span data-i18n="todays_offer"><?php echo htmlspecialchars($site['offerTrailPrefix'] ?? "Today's Offer", ENT_QUOTES); ?></span> &gt; <?php echo htmlspecialchars($title, ENT_QUOTES); ?></div>
+    <div class="offer-page__timer" id="adaptive-countdown"><span data-i18n="offer_expires_in"><?php echo htmlspecialchars($site['deadlineText'] ?? 'Attention, this offer expires in:', ENT_QUOTES); ?></span> 04:55</div>
 
     <div class="offer-grid">
         <section class="product-card">
             <div class="product-shot-wrap">
                 <div class="price-badge">
-                    <small>Pay Only</small>
+                    <small data-i18n="pay_only">Pay Only</small>
                     <span><span class="adaptive-upfront-currency-symbol"><?php echo htmlspecialchars($upfrontCurrencySymbol, ENT_QUOTES); ?></span><span class="adaptive-upfront-amount"><?php echo $upfrontPrice !== '' ? htmlspecialchars(number_format((float)$upfrontPrice, 2, '.', ''), ENT_QUOTES) : ''; ?></span></span>
                 </div>
                 <div class="product-shot" role="img" aria-label="<?php echo htmlspecialchars($title, ENT_QUOTES); ?> preview" style="background-image: url('<?php echo htmlspecialchars($imageUrl, ENT_QUOTES); ?>');"></div>
@@ -59,7 +59,7 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
 
             <div class="product-copy">
                 <h2 class="product-title"><?php echo htmlspecialchars($title, ENT_QUOTES); ?></h2>
-                <p class="stock-line"><span class="stock-dot"></span><?php echo htmlspecialchars((string)$inventory, ENT_QUOTES); ?> In stock</p>
+                <p class="stock-line"><span class="stock-dot"></span><?php echo htmlspecialchars((string)$inventory, ENT_QUOTES); ?> <span data-i18n="in_stock">In stock</span></p>
                 <ul class="feature-list">
                     <?php foreach ($features as $feature) { ?>
                         <li><?php echo $feature; ?></li>
@@ -69,7 +69,7 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
         </section>
 
         <aside class="lead-card">
-            <h3 class="lead-card__title"><?php echo htmlspecialchars($formTitle, ENT_QUOTES); ?></h3>
+            <h3 class="lead-card__title" data-i18n="fill_out_your_details"><?php echo htmlspecialchars($formTitle, ENT_QUOTES); ?></h3>
 
             <div class="lead-form">
                 <input type="hidden" name="pt_name" id="pt_name" value="">
@@ -84,33 +84,33 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
                 <input type="hidden" name="pt_state" id="pt_state" value="">
 
                 <div class="form-grid">
-                    <input class="adaptive-customer-field" type="text" id="first_name" name="first_name" placeholder="First name" value="<?php echo $firstName; ?>" required>
-                    <input class="adaptive-customer-field" type="text" id="last_name" name="last_name" placeholder="Last name" value="<?php echo $lastName; ?>" required>
-                    <input class="adaptive-customer-field" type="email" id="email" name="email" placeholder="Email address" value="<?php echo $email; ?>" required>
-                    <input class="adaptive-customer-field" type="tel" id="phone" name="phone" placeholder="Phone" value="<?php echo $phone; ?>">
+                    <input class="adaptive-customer-field" type="text" id="first_name" name="first_name" placeholder="First name" data-i18n-placeholder="first_name_placeholder" value="<?php echo $firstName; ?>" required>
+                    <input class="adaptive-customer-field" type="text" id="last_name" name="last_name" placeholder="Last name" data-i18n-placeholder="last_name_placeholder" value="<?php echo $lastName; ?>" required>
+                    <input class="adaptive-customer-field" type="email" id="email" name="email" placeholder="Email address" data-i18n-placeholder="email_address" value="<?php echo $email; ?>" required>
+                    <input class="adaptive-customer-field" type="tel" id="phone" name="phone" placeholder="Phone" data-i18n-placeholder="phone_number" value="<?php echo $phone; ?>">
                     <select class="adaptive-customer-field" id="country" name="country" required>
                         <?php foreach (($GLOBALS['countries'] ?? ['US' => 'United States']) as $code => $name) { ?>
                             <option value="<?php echo htmlspecialchars($code, ENT_QUOTES); ?>" <?php echo $countryValue === $code ? 'selected' : ''; ?>><?php echo htmlspecialchars($name, ENT_QUOTES); ?></option>
                         <?php } ?>
                     </select>
-                    <input class="adaptive-customer-field" type="text" id="address" name="address" placeholder="Billing address" value="<?php echo $address; ?>">
-                    <input class="adaptive-customer-field" type="text" id="address2" name="address2" placeholder="Apartment, suite, etc. (optional)" value="<?php echo $address2; ?>">
-                    <input class="adaptive-customer-field" type="text" id="city" name="city" placeholder="City" value="<?php echo $city; ?>">
-                    <input class="adaptive-customer-field" type="text" id="state" name="state" placeholder="State" value="<?php echo $state; ?>">
-                    <input class="adaptive-customer-field" type="text" id="zip" name="zip" placeholder="ZIP code" value="<?php echo $zip; ?>">
+                    <input class="adaptive-customer-field" type="text" id="address" name="address" placeholder="Billing address" data-i18n-placeholder="billing_address" value="<?php echo $address; ?>">
+                    <input class="adaptive-customer-field" type="text" id="address2" name="address2" placeholder="Apartment, suite, etc. (optional)" data-i18n-placeholder="address2_placeholder" value="<?php echo $address2; ?>">
+                    <input class="adaptive-customer-field" type="text" id="city" name="city" placeholder="City" data-i18n-placeholder="city" value="<?php echo $city; ?>">
+                    <input class="adaptive-customer-field" type="text" id="state" name="state" placeholder="State" data-i18n-placeholder="state" value="<?php echo $state; ?>">
+                    <input class="adaptive-customer-field" type="text" id="zip" name="zip" placeholder="ZIP code" data-i18n-placeholder="zip_code" value="<?php echo $zip; ?>">
                 </div>
 
                 <div class="adaptive-card-fields">
                     <div class="adaptive-card-field adaptive-card-field--full">
-                        <label for="card-number-element">Card Number</label>
+                        <label for="card-number-element" data-i18n="card_number">Card Number</label>
                         <div id="card-number-element" class="form-input"></div>
                     </div>
                     <div class="adaptive-card-field">
-                        <label for="card-expiry-element">Expiry Date</label>
+                        <label for="card-expiry-element" data-i18n="expiry_date">Expiry Date</label>
                         <div id="card-expiry-element" class="form-input"></div>
                     </div>
                     <div class="adaptive-card-field">
-                        <label for="card-cvc-element">CVV</label>
+                        <label for="card-cvc-element" data-i18n="cvv">CVV</label>
                         <div id="card-cvc-element" class="form-input"></div>
                     </div>
                     <div id="card-errors" role="alert"></div>
@@ -121,8 +121,13 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
                 (function () {
                     var seconds = 295;
                     var node = document.getElementById('adaptive-countdown');
-                    var prefix = <?php echo json_encode($site['deadlineText'] ?? 'Attention, this offer expires in:'); ?>;
+                    var fallbackPrefix = <?php echo json_encode($site['deadlineText'] ?? 'Attention, this offer expires in:'); ?>;
+                    var prefix = fallbackPrefix;
+                    function resolvePrefix() {
+                        prefix = window.getTranslation ? window.getTranslation('offer_expires_in', fallbackPrefix) : fallbackPrefix;
+                    }
                     function tick() {
+                        resolvePrefix();
                         var minutes = String(Math.floor(seconds / 60)).padStart(2, '0');
                         var rest = String(seconds % 60).padStart(2, '0');
                         if (node) node.textContent = prefix + ' ' + minutes + ':' + rest;
@@ -131,6 +136,7 @@ $zip = htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES);
                             window.setTimeout(tick, 1000);
                         }
                     }
+                    window.addEventListener('translationsLoaded', resolvePrefix);
                     tick();
                 })();
             </script>
