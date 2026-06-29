@@ -6,6 +6,8 @@ $amountValue = htmlspecialchars($pt_amount ?? ($post['pt_amount'] ?? '0.00'), EN
 $currencyValue = htmlspecialchars($pt_currency ?? ($post['pt_currency'] ?? $currency_text ?? 'USD'), ENT_QUOTES);
 $currencySymbolValue = htmlspecialchars($pt_currency_symbol ?? $display_currency ?? '$', ENT_QUOTES);
 $currencyPositionValue = htmlspecialchars($pt_currency_position ?? $currency_position ?? 'before', ENT_QUOTES);
+$upfrontAmountValue = htmlspecialchars(number_format((float)($adaptive_upfront_amount ?? $amountValue), 2, '.', ''), ENT_QUOTES);
+$upfrontCurrencySymbolValue = htmlspecialchars($adaptive_upfront_currency_symbol ?? $currencySymbolValue, ENT_QUOTES);
 $basePath = 'templates/form/adaptive-lp';
 ?>
 
@@ -33,7 +35,7 @@ $basePath = 'templates/form/adaptive-lp';
 <button class="primary-button" type="submit" id="form_submit_button" <?php echo ($use_recaptcha == 'y') ? "disabled" : "" ?>>
     <span data-i18n="complete_payment">Complete Payment</span>
     <span class="adaptive-submit-amount">
-        <span class="pt_currency_symbol"><?php echo $currencySymbolValue; ?></span><span class="total-amount"><?php echo $amountValue; ?></span>
+        <span class="adaptive-upfront-currency-symbol"><?php echo $upfrontCurrencySymbolValue; ?></span><span class="adaptive-upfront-amount"><?php echo $upfrontAmountValue; ?></span>
     </span>
 </button>
 

@@ -712,7 +712,9 @@ $bottom_info_data = array_merge($c->post, [
     'amount' => '0',
     'billing_period' => '',
     'trial_text' => '',
-    'invoice' => $invoice
+    'invoice' => $invoice,
+    'adaptive_upfront_amount' => $adaptiveUpfrontAmount,
+    'adaptive_upfront_currency_symbol' => $adaptiveUpfrontCurrencySymbol
 ]);
 
 // Add amount to bottom info data if set
