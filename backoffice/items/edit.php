@@ -297,7 +297,8 @@ $available_themes = array(
     'Minimalist' => 'Minimalist',
     'Colorful' => 'Colorful',
     'Normal' => 'Normal',
-    'PhysicalProduct' => 'PhysicalProduct'
+    'PhysicalProduct' => 'PhysicalProduct',
+    'adaptive-lp' => 'Adaptive LP'
 );
 
 $a->getHeader();

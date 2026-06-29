@@ -157,7 +157,15 @@ try {
     $isCustomMode = ($settings->theme_type === 'custom');
 
     // Handle theme-specific routing
-    if ($effectiveTheme === 'Minimalist' && basename($_SERVER['PHP_SELF']) !== 'index2.php') {
+    if ($effectiveTheme === 'adaptive-lp' && basename($_SERVER['PHP_SELF']) !== 'index6.php') {
+        $query = $_GET;
+        $queryString = !empty($query) ? '?' . http_build_query($query) : '';
+        $redirectUrl = '/index6.php' . $queryString;
+        error_log("REDIRECT TO: " . $redirectUrl);
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    } elseif ($effectiveTheme === 'Minimalist' && basename($_SERVER['PHP_SELF']) !== 'index2.php') {
         // Redirect to index2.php for Minimalist theme
         $query = $_GET;
         $queryString = !empty($query) ? '?' . http_build_query($query) : '';
@@ -191,7 +199,7 @@ try {
         error_log("REDIRECT TO: " . $redirectUrl);
         header('Location: ' . $redirectUrl);
         exit;
-    } elseif (!in_array($effectiveTheme, ['Minimalist', 'Colorful', 'PhysicalProduct', 'Normal']) && basename($_SERVER['PHP_SELF']) !== 'index.php') {
+    } elseif (!in_array($effectiveTheme, ['adaptive-lp', 'Minimalist', 'Colorful', 'PhysicalProduct', 'Normal']) && basename($_SERVER['PHP_SELF']) !== 'index.php') {
         // Default to index.php for all other themes
         $query = $_GET;
         $queryString = !empty($query) ? '?' . http_build_query($query) : '';

@@ -295,14 +295,15 @@ $a->getHeader();
                                <option value="CardStyle" <?php echo($settings->selected_theme=='CardStyle')?"selected":""; ?>>CardStyle</option>
                                <option value="Minimalist" <?php echo($settings->selected_theme=='Minimalist' || empty($settings->selected_theme))?"selected":""; ?>>Minimalist</option>
                                <option value="Colorful" <?php echo($settings->selected_theme=='Colorful' || empty($settings->selected_theme))?"selected":""; ?>>Colorful</option>
+                               <option value="adaptive-lp" <?php echo($settings->selected_theme=='adaptive-lp')?"selected":""; ?>>Adaptive LP</option>
                             </select>
                         </div>
                         <div class="form-group col-md-6">
                             <label>Theme Preview</label>
                             <div style="border: 1px solid #e5e5e5; border-radius: 8px; padding: 15px; background: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
                                 <?php 
-                                // Only use available themes: CardStyle, Minimalist, Colorful
-                                $availableThemes = ['CardStyle', 'Minimalist', 'Colorful'];
+                                // Only use available themes: CardStyle, Minimalist, Colorful, Adaptive LP
+                                $availableThemes = ['CardStyle', 'Minimalist', 'Colorful', 'adaptive-lp'];
                                 $theme = !empty($settings->selected_theme) && in_array($settings->selected_theme, $availableThemes) 
                                     ? $settings->selected_theme 
                                     : 'Minimalist';
@@ -311,7 +312,8 @@ $a->getHeader();
                                 $themeImages = [
                                     'CardStyle' => rtrim($settings->site_url, '/') . "/assets/images/CardStyle.png",
                                     'Minimalist' => rtrim($settings->site_url, '/') . "/assets/images/Minimalist.png",
-                                    'Colorful' => rtrim($settings->site_url, '/') . "/assets/images/Colorful.png"
+                                    'Colorful' => rtrim($settings->site_url, '/') . "/assets/images/Colorful.png",
+                                    'adaptive-lp' => rtrim($settings->site_url, '/') . "/assets/images/Minimalist.png"
                                 ];
                                 
                                 // Set default fallback to Minimalist

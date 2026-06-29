@@ -124,7 +124,7 @@ $().ready(function() {
         
         // Default to CardStyle if no valid theme is selected
         var theme = ($sel.val() || '').trim();
-        if(theme !== 'CardStyle' && theme !== 'Minimalist') { 
+        if(theme !== 'CardStyle' && theme !== 'Minimalist' && theme !== 'Colorful' && theme !== 'adaptive-lp') { 
             theme = 'CardStyle';
             $sel.val(theme); // Update the select element to show the correct theme
         }

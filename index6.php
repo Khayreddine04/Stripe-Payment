@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 /**
  * Author:     CriticalGears (http://www.CriticalGears.io)
@@ -155,6 +155,10 @@ try {
                 $stmtTheme->close();
             }
         }
+    }
+
+    if (basename($_SERVER['PHP_SELF']) === 'index6.php') {
+        $effectiveTheme = 'adaptive-lp';
     }
 
     $isCustomMode = ($settings->theme_type === 'custom');
@@ -668,7 +672,10 @@ if (isset($fetchedCurrencyData['success']) && $fetchedCurrencyData['success']) {
 // payment information template
 $payment_info_data = array_merge($c->post, [
     'selected_theme' => $__theme,
-    'post' => $c->post
+    'post' => $c->post,
+    'pt_currency' => $pt_currency,
+    'pt_currency_symbol' => $pt_currency_symbol,
+    'pt_currency_position' => $pt_currency_position
 ]);
 
 // Add amount to payment info data if set
@@ -691,6 +698,9 @@ $payment_type = new PT_Template(pt_resolve_template("form/payment_type.php", $__
 $bottom_info_data = array_merge($c->post, [
     'selected_theme' => $__theme,
     'post' => $c->post,
+    'pt_currency' => $pt_currency,
+    'pt_currency_symbol' => $pt_currency_symbol,
+    'pt_currency_position' => $pt_currency_position,
     'amount' => '0',
     'billing_period' => '',
     'trial_text' => '',
@@ -907,223 +917,37 @@ if ($https) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/css/bootstrap-slider.min.css"
         rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-slider/10.6.2/bootstrap-slider.min.js"></script>
-    <div class="container main" role="main">
+    <main class="adaptive-checkout" role="main">
         <?php echo ($c->getMessages()) ?>
         <?php if ($show_form) { ?>
-            <div class="product-section">
-                <div class="product-info">
-                    <!-- Progress Steps -->
-                    <div class="row mb-4">
-                        <div class="col-12">
-                            <ul class="progressbar">
-                                <li class="active" id="step1-indicator" data-i18n="personal_information">Personal Information
-                                </li>
-                                <li id="step2-indicator" data-i18n="payment_details">Payment Details</li>
-                            </ul>
-                        </div>
-                    </div>
+            <form class="validate payment_form" role="form" id="payment_form" method="post">
+                <input type="hidden" name="pt_action" value="do_payment">
+                <input type="hidden" name="pt_tax_rate" id="pt_tax_rate" readonly
+                    value="<?php echo $settings->tax_enable == 'y' ? $settings->tax_rate : 0; ?>" />
+                <input type="hidden" name="pt_tax_exempt" id="pt_tax_exempt" value="n" />
+                <input type="hidden" name="currency" value="<?php echo htmlspecialchars($pt_currency, ENT_QUOTES); ?>">
+                <input type="hidden" name="cid" value="<?php echo htmlspecialchars($_GET['cid'] ?? '', ENT_QUOTES); ?>">
+                <input type="hidden" name="service" value="<?php echo htmlspecialchars($_GET['service'] ?? '', ENT_QUOTES); ?>">
+                <input type="hidden" name="language" value="<?php echo htmlspecialchars($_GET['language'] ?? 'en', ENT_QUOTES); ?>">
+                <input type="hidden" name="productname" value="<?php echo htmlspecialchars(urldecode($_GET['productname'] ?? ''), ENT_QUOTES); ?>">
+                <input type="hidden" name="price" value="<?php echo htmlspecialchars(urldecode($_GET['price'] ?? ''), ENT_QUOTES); ?>">
 
-                    <!-- Step 1: Personal Information -->
-                    <div id="step1">
-                        <h3 class="mb-4" data-i18n="personal_information">Personal Information</h3>
-                        <form id="personal_info_form">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="full_name" class="form-label" data-i18n="full_name">Full name <span
-                                                class="text-danger">*</span></label>
-                                        <input type="text" class="form-control" id="full_name" name="full_name"
-                                            placeholder="Full Name" data-i18n-placeholder="full_name" required
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['full_name'] ?? $pt_name_resolved), ENT_QUOTES); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="email" class="form-label" data-i18n="email_address">Email Address <span
-                                                class="text-danger">*</span></label>
-                                        <input type="email" class="form-control" id="email" name="email" placeholder="Email"
-                                            data-i18n-placeholder="email_address" required
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['email'] ?? $pt_email_resolved), ENT_QUOTES); ?>">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="phone" class="form-label" data-i18n="phone_number">Phone Number</label>
-                                        <input type="tel" class="form-control" id="phone" name="phone"
-                                            placeholder="Phone Number" data-i18n-placeholder="phone_number"
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['phone'] ?? ''), ENT_QUOTES); ?>"
-                                            oninput="this.value = this.value.replace(/[^0-9]/g, '')" pattern="[0-9]*"
-                                            inputmode="numeric">
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="mb-3">
-                                        <label for="address" class="form-label" data-i18n="address">Address</label>
-                                        <input type="text" class="form-control" id="address" name="address"
-                                            placeholder="Address" data-i18n-placeholder="address"
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['address'] ?? ''), ENT_QUOTES); ?>">
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="city" class="form-label" data-i18n="city">City</label>
-                                        <input type="text" class="form-control" id="city" name="city" placeholder="City"
-                                            data-i18n-placeholder="city"
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['city'] ?? ''), ENT_QUOTES); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="zip" class="form-label" data-i18n="zip_postal_code">ZIP/Postal Code</label>
-                                        <input type="text" class="form-control" id="zip" name="zip"
-                                            placeholder="ZIP/Postal Code" data-i18n-placeholder="zip_postal_code"
-                                            value="<?php echo htmlspecialchars(urldecode($_GET['zip'] ?? ''), ENT_QUOTES); ?>">
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="mb-3">
-                                        <label for="country" class="form-label" data-i18n="country">Country</label>
-                                        <select class="form-select" id="country" name="country" required>
-                                            <option value="" data-i18n="select_country" style="font-weight: 800; font-size: 17px;">Select Country</option>
-                                            <?php
-                                            // Get translations for the current language
-                                            // This returns a flat array: ['US' => 'United States', ...]
-                                            $translatedCountries = getAllCountriesInLanguage($lang);
-
-                                            // Use the structure from includes/countries.php which is now flat
-                                            $countries = $GLOBALS['countries'];
-
-                                            foreach ($countries as $code => $englishName) {
-                                                // Use translation if available, otherwise fallback to English name
-                                                // If translatedCountries contains the code, use it, otherwise use the english name from the array
-                                                $displayName = $translatedCountries[$code] ?? $englishName;
-
-                                                $selected = ($detectedCountry === $code) ? 'selected' : '';
-                                                echo "<option value='$code' $selected>$displayName</option>\n";
-                                            }
-                                            ?>
-                                        </select>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-end">
-                                <button type="button" id="next-btn" class="btn btn-primary"
-                                    data-i18n="continue_to_payment">Continue to Payment</button>
-                            </div>
-                        </form>
-                    </div>
-
-                    <!-- Step 2: Payment Form (initially hidden) -->
-                    <div id="step2" style="display: none;">
-                        <button type="button" id="back-btn" class="btn btn-link mb-3 p-0"
-                            style="display:flex; align-items:center;">
-                            <i class="bi bi-arrow-left"></i> <span data-i18n="back_to_personal_information"> Back to Personal
-                                Information</span>
-                        </button>
-                        <form class="validate payment_form" role="form" id="payment_form" method="post">
-                            <input type="hidden" name="pt_action" value="do_payment">
-                            <input type="hidden" name="pt_tax_rate" id="pt_tax_rate" readonly
-                                value="<?php echo $settings->tax_enable == 'y' ? $settings->tax_rate : 0; ?>" />
-                            <input type="hidden" name="pt_tax_exempt" id="pt_tax_exempt" value="n" />
-                            <input type="hidden" name="pt_name" id="form_full_name" value="">
-                            <input type="hidden" name="pt_email" id="form_email" value="">
-                            <input type="hidden" name="pt_phone" id="form_phone" value="">
-                            <input type="hidden" name="pt_address" id="form_address" value="">
-                            <input type="hidden" name="pt_city" id="form_city" value="">
-                            <input type="hidden" name="pt_zip" id="form_zip" value="">
-                            <input type="hidden" name="pt_country" id="form_country" value="">
-                            <input type="hidden" name="currency"
-                                value="<?php echo htmlspecialchars($pt_currency, ENT_QUOTES); ?>">
-                            <input type="hidden" name="cid"
-                                value="<?php echo htmlspecialchars($_GET['cid'] ?? '', ENT_QUOTES); ?>">
-                            <input type="hidden" name="service"
-                                value="<?php echo htmlspecialchars($_GET['service'] ?? '', ENT_QUOTES); ?>">
-                            <input type="hidden" name="language"
-                                value="<?php echo htmlspecialchars($_GET['language'] ?? 'en', ENT_QUOTES); ?>">
-                            <input type="hidden" name="productname"
-                                value="<?php echo htmlspecialchars(urldecode($_GET['productname'] ?? ''), ENT_QUOTES); ?>">
-                            <input type="hidden" name="price"
-                                value="<?php echo htmlspecialchars(urldecode($_GET['price'] ?? ''), ENT_QUOTES); ?>">
-
-                            <div style="display:none">
-                                <?php $order_info->render(true) ?>
-                            </div>
-
-                            <?php $payment_type->render(true) ?>
-                            <div class="clearfix"></div>
-                            <?php $shipping_info->render(true); ?>
-                            <!-- Star Ratings -->
-                            <div class="stars-container">
-                                <div class="stars-wrapper">
-                                    <!-- Full star -->
-                                    <svg class="star-icon" viewBox="0 0 20 20" width="24" height="24">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                            fill="#fbbf24" />
-                                    </svg>
-                                    <!-- Full star -->
-                                    <svg class="star-icon" viewBox="0 0 20 20" width="24" height="24">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                            fill="#fbbf24" />
-                                    </svg>
-                                    <!-- Full star -->
-                                    <svg class="star-icon" viewBox="0 0 20 20" width="24" height="24">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                            fill="#fbbf24" />
-                                    </svg>
-                                    <!-- Full star -->
-                                    <svg class="star-icon" viewBox="0 0 20 20" width="24" height="24">
-                                        <path
-                                            d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                            fill="#fbbf24" />
-                                    </svg>
-                                    <!-- Half star -->
-                                    <div style="position: relative; display: inline-block; width: 24px; height: 24px;">
-                                        <!-- Gray background star -->
-                                        <svg viewBox="0 0 20 20" width="24" height="24"
-                                            style="position: absolute; top: 0; left: 0;">
-                                            <path
-                                                d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                                fill="#e5e7eb" />
-                                        </svg>
-                                        <!-- Yellow half star -->
-                                        <div
-                                            style="position: absolute; top: 0; left: 0; width: 12px; height: 24px; overflow: hidden;">
-                                            <svg viewBox="0 0 20 20" width="24" height="24"
-                                                style="position: absolute; top: 0; left: 0;">
-                                                <path
-                                                    d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-                                                    fill="#fbbf24" />
-                                            </svg>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="rating-text" data-i18n="reviews">4.5 (100+ reviews)</div>
-                            </div>
-                            <!-- End Star Ratings -->
-                            <?php $payment_info->render(true); ?>
-                            <?php $bottom_info->render(true); ?>
-                        </form>
-                    </div>
+                <div style="display:none">
+                    <?php $order_info->render(true) ?>
+                    <?php $payment_type->render(true) ?>
                 </div>
-            </div>
+
+                <?php $payment_info->render(true); ?>
+                <?php $bottom_info->render(true); ?>
+            </form>
         <?php } ?>
-    </div>
+    </main>
     <?php $footer->render(true); ?>
     </div>
     <?php
     $popup->render(true);
 } // End of if ($https)
 ?>
-
 
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
@@ -1142,50 +966,6 @@ if ($https) {
 <script src="assets/js/payment_form.js?v=<?php echo rand(1, 9999) ?>" type="application/javascript"></script>
 
 
-<style>
-    #step1,
-    #step2 {
-        animation: fadeIn 0.3s ease-in-out;
-    }
-
-    @keyframes fadeIn {
-        from {
-            opacity: 0;
-            transform: translateY(10px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .form-label {
-        font-weight: 500;
-        margin-bottom: 0.5rem;
-    }
-
-    .btn-primary {
-        padding: 0.5rem 1.5rem;
-    }
-
-    #back-btn {
-        color: #6c757d;
-        text-decoration: none;
-        font-size: 0.9rem;
-        display: inline-flex;
-        align-items: center;
-        gap: 0.25rem;
-    }
-
-    #back-btn:hover {
-        color: #0d6efd;
-    }
-
-    #back-btn i {
-        font-size: 1rem;
-    }
-</style>
 <script type="text/javascript">
     var stripe = Stripe('<?php echo $payment->public_key; ?>');
     var script_url = "<?php echo $settings->siteUrl() ?>";
@@ -1199,425 +979,28 @@ if ($https) {
     var buttons_country = '<?php echo $settings->buttons_country ?>';
 
 
-    // Two-step form functionality
+    function syncAdaptiveCustomerFields() {
+        var firstName = $('#first_name').val() || '';
+        var lastName = $('#last_name').val() || '';
+        var fullName = $.trim((firstName + ' ' + lastName).replace(/\s+/g, ' '));
+
+        $('#pt_name').val(fullName);
+        $('#pt_email').val($('#email').val() || '');
+        $('#pt_phone').val($('#phone').val() || '');
+        $('#pt_address1').val($('#address').val() || '');
+        $('#pt_address').val($('#address').val() || '');
+        $('#pt_address2').val($('#address2').val() || '');
+        $('#pt_city').val($('#city').val() || '');
+        $('#pt_postal').val($('#zip').val() || '');
+        $('#pt_zip').val($('#zip').val() || '');
+        $('#pt_state').val($('#state').val() || '');
+        $('#pt_country').val($('#country').val() || $('#pt_country').val());
+    }
+
     $(document).ready(function () {
-        // Flag to track if validation has been initialized
-        var validationInitialized = false;
-
-        // Handle form submission
-        function updatePaymentForm() {
-            // Update hidden fields in payment form with personal info
-            const formData = {
-                'form_full_name': $('#full_name').val(),
-                'form_email': $('#email').val(),
-                'form_phone': $('#phone').val(),
-                'form_address': $('#address').val(),
-                'form_city': $('#city').val(),
-                'form_zip': $('#zip').val(),
-                'form_country': $('#country').val()
-            };
-
-            // Set values for all form fields
-            Object.keys(formData).forEach(function (key) {
-                $(`#${key}`).val(formData[key]);
-            });
-
-            return true;
-        }
-
-        // Function to get translated validation messages
-        function getTranslatedValidationMessages() {
-            // Default English messages as fallback
-            const defaultMessages = {
-                full_name: {
-                    required: "Please enter your full name",
-                    minlength: "Name must be at least 3 characters"
-                },
-                email: {
-                    required: "Please enter your email address",
-                    email: "Please enter a valid email address"
-                },
-                email: {
-                    required: "Please enter your email address",
-                    email: "Please enter a valid email address"
-                },
-                phone: {
-                    minlength: "Phone number is too short",
-                    maxlength: "Phone number is too long"
-                },
-                address: {
-                    minlength: "Address is too short"
-                },
-                city: {
-                    minlength: "City name is too short"
-                },
-                zip: {
-                    minlength: "ZIP code is too short",
-                    maxlength: "ZIP code is too long"
-                },
-                country: {
-                    required: "Please select a country"
-                }
-            };
-
-            // If translations are available, use them
-            if (window.siteTranslations) {
-                console.log("Using translations for validation messages:", window.siteTranslations);
-                return {
-                    full_name: {
-                        required: window.siteTranslations.please_enter_full_name || defaultMessages.full_name.required,
-                        minlength: window.siteTranslations.name_min_length || defaultMessages.full_name.minlength
-                    },
-                    email: {
-                        required: window.siteTranslations.fieldRequired || defaultMessages.email.required,
-                        email: window.siteTranslations.fieldEmail || defaultMessages.email.email
-                    },
-                    phone: {
-                        minlength: window.siteTranslations.phone_min_length || defaultMessages.phone.minlength,
-                        maxlength: window.siteTranslations.phone_max_length || defaultMessages.phone.maxlength
-                    },
-                    address: {
-                        minlength: window.siteTranslations.address_min_length || defaultMessages.address.minlength
-                    },
-                    city: {
-                        minlength: window.siteTranslations.city_min_length || defaultMessages.city.minlength
-                    },
-                    zip: {
-                        minlength: window.siteTranslations.zip_min_length || defaultMessages.zip.minlength,
-                        maxlength: window.siteTranslations.zip_max_length || defaultMessages.zip.maxlength
-                    },
-                    country: {
-                        required: window.siteTranslations.select_country || defaultMessages.country.required
-                    }
-                };
-            }
-
-            console.log("Using default English validation messages");
-            return defaultMessages;
-        }
-
-        // Main initialization function
-        function initializeFormValidation() {
-            if (validationInitialized) {
-                console.log("Validation already initialized, skipping...");
-                return;
-            }
-
-            console.log("Initializing form validation with translations", window.siteTranslations);
-
-            function updateFullName() {
-                const firstName = $("#first_name").val() || "";
-                const lastName = $("#last_name").val() || "";
-                $("#form_full_name").val((firstName + " " + lastName).trim());
-            }
-
-            $("#first_name, #last_name").on("input", updateFullName);
-
-            // First, destroy any existing validation
-            if ($.validator && $('#personal_info_form').validate()) {
-                $('#personal_info_form').validate().destroy();
-            }
-
-            // Initialize form validation for personal info
-            $("#personal_info_form").validate({
-                errorPlacement: function (error, element) {
-                    error.addClass("invalid-feedback");
-                    element.after(error);
-                },
-                highlight: function (element) {
-                    $(element).addClass("is-invalid");
-                },
-                unhighlight: function (element) {
-                    $(element).removeClass("is-invalid");
-                },
-                rules: {
-                    full_name: {
-                        required: true,
-                        minlength: 2,
-                    },
-                    email: {
-                        required: true,
-                        email: true,
-                    },
-                    phone: {
-                        minlength: 8,
-                        maxlength: 20,
-                    },
-                    address: {
-                        minlength: 5,
-                    },
-                    city: {
-                        minlength: 2,
-                    },
-                    zip: {
-                        minlength: 3,
-                        maxlength: 10,
-                    },
-                    country: {
-                        required: true
-                    }
-                },
-                messages: getTranslatedValidationMessages(),
-                submitHandler: function (form) {
-                    return false; // Prevent form submission
-                }
-            });
-
-            // Handle payment form submission
-            $("#payment_form").on("submit", function (e) {
-                // Validate all fields
-                const isPersonalInfoValid = $("#personal_info_form").valid();
-
-                if (!isPersonalInfoValid) {
-                    e.preventDefault();
-                    e.stopPropagation();
-
-                    // Find first error and scroll to it
-                    const firstError = $(".is-invalid").first();
-                    if (firstError.length) {
-                        $("html, body").animate(
-                            {
-                                scrollTop: firstError.offset().top - 100,
-                            },
-                            500
-                        );
-                    }
-                    return false;
-                }
-
-                // Update hidden fields before submission
-                updatePaymentForm();
-                return true;
-            });
-
-            // Update payment form on any field change and validate
-            $("#personal_info_form input, #personal_info_form select").on(
-                "change blur",
-                function () {
-                    updatePaymentForm();
-                    $(this).valid();
-                }
-            );
-
-            validationInitialized = true;
-            console.log("Form validation initialized successfully");
-        }
-
-        console.log("Document ready, checking for translations...");
-
-        // Function to handle translations loaded
-        function handleTranslationsLoaded() {
-            console.log("Translations loaded event received");
-            setTimeout(function () {
-                initializeFormValidation();
-            }, 100); // Small delay to ensure translations are fully loaded
-        }
-
-        // Check if translations are already loaded
-        if (window.siteTranslations && Object.keys(window.siteTranslations).length > 0) {
-            console.log("Translations already loaded on page load");
-            // Small delay to ensure all elements are ready
-            setTimeout(function () {
-                initializeFormValidation();
-            }, 500);
-        } else {
-            console.log("Waiting for translations to load...");
-            // Listen for translations loaded event
-            $(document).on('translationsLoaded', handleTranslationsLoaded);
-
-            // Also check periodically (fallback in case event doesn't fire)
-            var translationCheckInterval = setInterval(function () {
-                if (window.siteTranslations && Object.keys(window.siteTranslations).length > 0) {
-                    console.log("Translations found via interval check");
-                    clearInterval(translationCheckInterval);
-                    handleTranslationsLoaded();
-                }
-            }, 200);
-
-            // Timeout after 5 seconds as fallback
-            setTimeout(function () {
-                clearInterval(translationCheckInterval);
-                if (!validationInitialized) {
-                    console.log("Fallback: Initializing validation without translations");
-                    initializeFormValidation();
-                }
-            }, 5000);
-        }
-
-        // Next button click handler
-        $('#next-btn').on('click', function (e) {
-            e.preventDefault();
-            e.stopPropagation();
-
-            // Trigger validation for all fields
-            const isFormValid = $("#personal_info_form").valid();
-
-            if (isFormValid) {
-                // Update all hidden fields in payment form with personal info
-                const formData = {
-                    'form_full_name': $('#full_name').val(),
-                    'form_email': $('#email').val(),
-                    'form_phone': $('#phone').val(),
-                    'form_address': $('#address').val(),
-                    'form_city': $('#city').val(),
-                    'form_zip': $('#zip').val(),
-                    'form_country': $('#country').val()
-                };
-
-
-                // Set values for all form fields
-                Object.keys(formData).forEach(function (key) {
-                    $(`#${key}`).val(formData[key]);
-                });
-
-                // Also ensure these values are passed as URL parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const additionalParams = {};
-
-                // Add URL parameters that should be preserved
-                ['cid', 'service', 'language', 'productname', 'price'].forEach(param => {
-                    if (urlParams.has(param)) {
-                        additionalParams[param] = urlParams.get(param);
-                    }
-                });
-
-                // Update hidden inputs for URL parameters
-                Object.entries(additionalParams).forEach(([key, value]) => {
-                    $(`input[name="${key}"]`).val(value);
-                });
-
-                updateProgressBar(2);
-
-                // Scroll to top of form
-                $('html, body').animate({
-                    scrollTop: $('.product-info').offset().top - 20
-                }, 300);
-            } else {
-                // Find first error and scroll to it
-                const firstError = $(".is-invalid").first();
-                if (firstError.length) {
-                    $("html, body").animate(
-                        {
-                            scrollTop: firstError.offset().top - 100,
-                        },
-                        500
-                    );
-                }
-            }
-        });
-
-        // Next button click handler
-        $('#next-btn').on('click', function (e) {
-            e.preventDefault();
-
-            if ($('#personal_info_form').valid()) {
-                // Update all hidden fields in payment form with personal info
-                const formData = {
-                    'form_full_name': $('#full_name').val(),
-                    'form_email': $('#email').val(),
-                    'form_phone': $('#phone').val(),
-                    'form_address': $('#address').val(),
-                    'form_city': $('#city').val(),
-                    'form_zip': $('#zip').val(),
-                    'form_country': $('#country').val()
-                };
-
-                // Set values for all form fields
-                Object.keys(formData).forEach(function (key) {
-                    $(`#${key}`).val(formData[key]);
-                });
-
-                // Also ensure these values are passed as URL parameters
-                const urlParams = new URLSearchParams(window.location.search);
-                const additionalParams = {};
-
-                // Add URL parameters that should be preserved
-                ['cid', 'service', 'language', 'productname', 'price'].forEach(param => {
-                    if (urlParams.has(param)) {
-                        additionalParams[param] = urlParams.get(param);
-                    }
-                });
-
-                // Update hidden inputs for URL parameters
-                Object.entries(additionalParams).forEach(([key, value]) => {
-                    $(`input[name="${key}"]`).val(value);
-                });
-
-                // Progress Bar State Management
-                function updateProgressBar(step) {
-                    const progressBar = document.querySelector('.progressbar');
-                    const step1Indicator = document.getElementById('step1-indicator');
-                    const step2Indicator = document.getElementById('step2-indicator');
-
-                    if (step === 1) {
-                        // Reset to step 1
-                        progressBar.classList.remove('step2');
-                        step1Indicator.classList.add('active');
-                        step1Indicator.classList.remove('completed');
-                        step2Indicator.classList.remove('active', 'completed');
-
-                        // Reset progress line
-                        progressBar.style.setProperty('--progress-width', '0%');
-                        progressBar.style.setProperty('--progress-color', '#4f46e5');
-                    } else if (step === 2) {
-                        // Move to step 2
-                        progressBar.classList.add('step2');
-                        step1Indicator.classList.remove('active');
-                        step1Indicator.classList.add('completed');
-                        step2Indicator.classList.add('active');
-
-                        // Animate progress line
-                        progressBar.style.setProperty('--progress-width', '100%');
-                        progressBar.style.setProperty('--progress-color', '#4f46e5');
-                    }
-                }
-
-                updateProgressBar(2);
-
-                // Show step 2, hide step 1
-                $('#step1').fadeOut(300, function () {
-                    $('#step2').fadeIn(300);
-                    // Initialize Stripe elements when showing payment form
-                    if (typeof initStripeElements === 'function') {
-                        initStripeElements();
-                    }
-                });
-
-                // Scroll to top of form
-                $('html, body').animate({
-                    scrollTop: $('.product-info').offset().top - 20
-                }, 300);
-            }
-        });
-
-        // Back button click handler
-        $('#back-btn').on('click', function (e) {
-            e.preventDefault();
-
-            // Reset progress bar to step 1
-            updateProgressBar(1);
-
-            // Show step 1, hide step 2
-            $('#step2').fadeOut(300, function () {
-                $('#step1').fadeIn(300);
-            });
-
-            // Scroll to top of form
-            $('html, body').animate({
-                scrollTop: $('.product-info').offset().top - 20
-            }, 300);
-        });
-
-        // Also try to initialize validation when the page is fully loaded
-        $(window).on('load', function () {
-            console.log("Window loaded, checking validation status");
-            if (!validationInitialized && window.siteTranslations && Object.keys(window.siteTranslations).length > 0) {
-                console.log("Initializing validation on window load");
-                setTimeout(function () {
-                    initializeFormValidation();
-                }, 300);
-            }
-        });
+        $('#payment_form').on('input change', '.adaptive-customer-field', syncAdaptiveCustomerFields);
+        $('#payment_form').on('submit', syncAdaptiveCustomerFields);
+        syncAdaptiveCustomerFields();
     });
 </script>
 
@@ -1626,3 +1009,4 @@ if ($https) {
 <?php echo ($c->getDebug()) ?>
 
 </html>
+

@@ -1,0 +1,263 @@
+{
+  "site": {
+    "offerLabel": "Special Offer",
+    "offerTrailPrefix": "Today's Offer",
+    "deadlineText": "Attention, this offer expires in:",
+    "defaultTimer": "04:55",
+    "formTitle": "Fill Out Your Details",
+    "buttonText": "CONTINUE",
+    "secureText": "Secure 256 Bit Encrypted Connection",
+    "defaultCountry": "United States",
+    "badges": ["McAfee SECURE", "Norton Secured", "TRUSTe Verified"]
+  },
+  "landingPages": [
+    {
+      "id": "11952",
+      "title": "McCormick Spice Rack",
+      "price": "11.52",
+      "inventory": 3,
+      "timer": "04:55",
+      "formTitle": "Fill Out Your Details",
+      "stockColor": "#e11c24",
+      "buttonColor": "#2c63e6",
+      "sourceUrl": "https://app.screencast.com/Wk1lfKY0cKJEo",
+      "referenceScreenshot": "https://app.screencast.com/Wk1lfKY0cKJEo/thumbnail",
+      "image": "./assets/images/McCormick-Gourmet.avif",
+      "summary": "Enter for your chance to win a brand new McCormick Spice Rack. McCormick Organic Spice Rack features 24 of our highest quality organic herbs and spices.",
+      "footer": {
+        "title": "MCCORMICK SPICE RACK",
+        "text": "Enter for your chance to win a brand new McCormick Spice Rack. McCormick Organic Spice Rack features 24 of our highest quality organic herbs and spices. This kitchen must-have can be a countertop spice rack or wall mounted to the wall (requires 2 screws). Our spice rack with spices included offers unbeatable value vs buying individual spices."
+      },
+      "features": [
+        "<strong>McCormick Gourmet Three Tier Wood 24 Piece Spice Rack, 27.6 oz Box</strong>",
+        "<strong>CLASSIC DESIGN:</strong> With three tiers to hold 24 spice jars, this aesthetically pleasing wooden spice rack helps ensure you always have delicious, inspiring flavor within convenient reach.",
+        "<strong>24 ORGANIC HERBS & SPICES:</strong> Elevate your cooking and meals with 24 organic McCormick Gourmet herbs, spices and seasonings including classics like Organic Basil, Organic Saigon Cinnamon, and more.",
+        "<strong>WALL MOUNTED:</strong> Sturdy design can be wall mounted with two screws (not included) or setup on your countertop.",
+        "<strong>GIFTABLE:</strong> This classic wooden spice rack is a thoughtful gift for any flavor-lover in your life, and makes a great housewarming, wedding, or bridal shower gift, too.",
+        "<strong>FLAVORSEALED:</strong> Bottle is created with a FlavorSealed design for long lasting fresh flavor.",
+        "<strong>DIMENSIONS:</strong> Vertical, space-saving, 3-tiered rack measurements: Width: 16.125 inch, Depth: 2.5625 inch, Height: 18.75 inch.",
+        "For tips on how to prepare this product, please reference label instructions.",
+        "This product is in a Cardboard Box."
+      ]
+    },
+    {
+      "id": "11951",
+      "title": "Riverbend Ranch Meat Box",
+      "price": "11.52",
+      "inventory": 5,
+      "sourceUrl": "https://app.screencast.com/8Ir8Tf3bKLAyh",
+      "referenceScreenshot": "https://app.screencast.com/8Ir8Tf3bKLAyh/thumbnail",
+      "image": "./assets/images/Riverbend Ranch Meat Box.webp",
+      "summary": "Enter for your chance to win a premium Riverbend Ranch Meat Box. It is a crowd-pleasing offer for households that enjoy high-quality cuts, steak nights, and freezer-ready meal prep.",
+      "features": [
+        "Curated assortment of premium beef cuts for home grilling and cooking.",
+        "Ideal for meal prep, weekend hosting, or upgrading family dinners.",
+        "Convenient packaged selection designed for freshness and easy storage.",
+        "A high-value bundle that appeals to meat lovers and gift shoppers alike."
+      ]
+    },
+    {
+      "id": "11950",
+      "title": "Pittsburgh Tool Set",
+      "price": "11.52",
+      "inventory": 4,
+      "sourceUrl": "https://app.screencast.com/fKb3tOKo9Qclo",
+      "referenceScreenshot": "https://app.screencast.com/fKb3tOKo9Qclo/thumbnail",
+      "image": "./assets/images/Pittsburgh Tool Set.jfif",
+      "summary": "Enter for your chance to win a complete Pittsburgh Tool Set. This practical giveaway is perfect for home repairs, starter tool collections, and anyone who wants reliable essentials in one kit.",
+      "features": [
+        "Versatile tool assortment for everyday maintenance and repair tasks.",
+        "Great for apartments, garages, cars, and first-time homeowners.",
+        "Portable case helps keep tools organized and easy to transport.",
+        "Useful hand tools designed for routine fixes and quick projects."
+      ]
+    },
+    {
+      "id": "11949",
+      "title": "Tupperware Brand Modular Mates 36-Piece Storage Set",
+      "price": "11.52",
+      "inventory": 4,
+      "timer": "04:58",
+      "formTitle": "Fill Out Your Details",
+      "stockColor": "#f28b00",
+      "buttonColor": "#2c63e6",
+      "sourceUrl": "https://app.screencast.com/Id6vlQecaDYmF",
+      "referenceScreenshot": "https://app.screencast.com/Id6vlQecaDYmF/thumbnail",
+      "image": "./assets/images/images.jfif",
+      "summary": "Enter for your chance to win a brand new Tupperware Brand Modular Mates 36-Piece Storage Set. Enter for your chance to win a brand new Tupperware Modular Mates 36-Piece Storage.",
+      "footer": {
+        "title": "TUPPERWARE BRAND MODULAR MATES 36-PIECE STORAGE SET",
+        "text": "Enter for your chance to win a brand new Tupperware Brand Modular Mates 36-Piece Storage Set. Enter for your chance to win a brand new Tupperware Modular Mates 36-Piece Storage. Level up your pantry organization with our famous Modular Mates dry storage containers, now in a limited-edition style."
+      },
+      "features": [
+        "<strong>FRESH AND SECURE :</strong> Airtight, moisture proof and insect proof to protect food. Retains crunch of crunchy foods and softness of soft foods.",
+        "<strong>SPACE SAVING:</strong> Designed for easy stacking and named by height.",
+        "<strong>NO MORE GUESSING :</strong> Content visible at a glance, no more guesswork or rummaging. Smooth window for adding labels if needed, lightly textured sides for better grip. BPA-free",
+        "<strong>DURABLE :</strong> Built to last for years of consistent service. Dishwasher safe.",
+        "<strong>TIDY AND NEAT :</strong> Stay organized and inspired by having a tidy pantry with all your goods neatly stacked and visible."
+      ]
+    },
+    {
+      "id": "11948",
+      "title": "Marriott Luxury Pillows",
+      "price": "11.52",
+      "inventory": 5,
+      "sourceUrl": "https://app.screencast.com/RXuBtUCgULfs3",
+      "referenceScreenshot": "https://app.screencast.com/RXuBtUCgULfs3/thumbnail",
+      "image": "./assets/images/pillows.PNG",
+      "summary": "Enter for your chance to win Marriott Luxury Pillows. This comfort-focused offer is designed for people who want a more hotel-style sleep setup at home.",
+      "features": [
+        "Luxury-style pillow set inspired by upscale hotel comfort.",
+        "Soft, supportive feel designed to improve nightly rest.",
+        "Suitable for guest rooms, bedroom refreshes, or comfort upgrades.",
+        "A simple home item with broad appeal and easy use."
+      ]
+    },
+    {
+      "id": "11947",
+      "title": "Car Emergency Kit",
+      "price": "11.52",
+      "inventory": 7,
+      "sourceUrl": "https://app.screencast.com/o5VWpxRoqzuio",
+      "referenceScreenshot": "https://app.screencast.com/o5VWpxRoqzuio/thumbnail",
+      "image": "./assets/images/Car Emergency Kit.jfif",
+      "summary": "Enter for your chance to win a Car Emergency Kit. It is a safety-focused giveaway that fits commuters, families, new drivers, and anyone preparing for roadside situations.",
+      "features": [
+        "Emergency-ready kit built for roadside support and car safety.",
+        "Helpful for travel, commuting, and unpredictable weather conditions.",
+        "Compact format stores easily in a trunk or back seat area.",
+        "A practical preparedness item with strong everyday relevance."
+      ]
+    },
+    {
+      "id": "11946",
+      "title": "Predator Generator",
+      "price": "11.52",
+      "inventory": 2,
+      "sourceUrl": "https://app.screencast.com/DmRj0sD2ESM7e",
+      "referenceScreenshot": "https://app.screencast.com/DmRj0sD2ESM7e/thumbnail",
+      "image": "./assets/images/Predator Generator.jfif",
+      "summary": "Enter for your chance to win a Predator Generator. This high-interest offer targets homeowners, campers, and anyone who wants backup power for emergencies or outdoor use.",
+      "features": [
+        "Portable generator built for backup power and outdoor flexibility.",
+        "Useful for outages, job sites, camping, or event power needs.",
+        "Strong perceived value makes it a standout sweepstakes offer.",
+        "Designed for users who want portable energy in critical moments."
+      ]
+    },
+    {
+      "id": "11945",
+      "title": "iPad Pro Wi‑Fi 1TB Space Gray",
+      "price": "11.49",
+      "inventory": 4,
+      "timer": "04:58",
+      "formTitle": "Fill Out Your Details:",
+      "stockColor": "#f0a000",
+      "buttonColor": "#e6752a",
+      "sourceUrl": "https://app.screencast.com/e5bc1uQ403ctD",
+      "referenceScreenshot": "https://app.screencast.com/e5bc1uQ403ctD/thumbnail",
+      "image": "./assets/images/iPad Pro Wi‑Fi 1TB Space Gray.jfif",
+      "summary": "",
+      "features": [
+        "12.9-inch (diagonal) Liquid Retina XDR display",
+        "Apple M2 chip",
+        "Pro camera system: Wide and Ultra Wide cameras",
+        "4K video recording",
+        "Face ID",
+        "Center Stage",
+        "Four speaker audio",
+        "Antireflective coating",
+        "Up to 10 hours of battery life",
+        "1.5 pounds and 0.25 inch"
+      ]
+    },
+    {
+      "id": "11944",
+      "title": "Keurig Coffee Maker",
+      "price": "13.95",
+      "inventory": 4,
+      "sourceUrl": "https://app.screencast.com/A2zYcbJX20JNy",
+      "referenceScreenshot": "https://app.screencast.com/A2zYcbJX20JNy/thumbnail",
+      "image": "./assets/images/Keurig Coffee Maker.jfif",
+      "summary": "Enter for your chance to win a Keurig Coffee Maker. It is a familiar kitchen offer for quick daily brewing, home offices, and easy single-serve convenience.",
+      "features": [
+        "Single-serve coffee system built for speed and convenience.",
+        "Ideal for busy mornings, home offices, and small kitchens.",
+        "Simple brewing workflow with wide consumer brand recognition.",
+        "Appeals to coffee drinkers looking for everyday ease."
+      ]
+    },
+    {
+      "id": "11943",
+      "title": "HP Spectre",
+      "price": "13.95",
+      "inventory": 2,
+      "sourceUrl": "https://app.screencast.com/mRhYmJLVpKmNh",
+      "referenceScreenshot": "https://app.screencast.com/mRhYmJLVpKmNh/thumbnail",
+      "image": "./assets/images/HP Spectre.PNG",
+      "summary": "Enter for your chance to win an HP Spectre. This sleek laptop offer suits remote work, study, streaming, and users who want a premium everyday computer.",
+      "features": [
+        "Premium laptop designed for productivity and modern portability.",
+        "Well suited for work, study, browsing, and entertainment.",
+        "Slim, stylish hardware with strong mainstream tech appeal.",
+        "A higher-ticket device that helps the offer stand out quickly."
+      ]
+    },
+    {
+      "id": "11942",
+      "title": "Dyson V15",
+      "price": "11.52",
+      "inventory": 3,
+      "sourceUrl": "https://app.screencast.com/C9jHNcW526yIn",
+      "referenceScreenshot": "https://app.screencast.com/C9jHNcW526yIn/thumbnail",
+      "image": "./assets/images/dyson v15.PNG",
+      "summary": "Enter for your chance to win a Dyson V15. This premium home-cleaning offer combines strong brand recognition with everyday usefulness for busy households.",
+      "features": [
+        "Cordless vacuum built for powerful whole-home cleaning.",
+        "Lightweight format helps with floors, corners, and quick pickups.",
+        "Premium Dyson branding adds trust and high perceived value.",
+        "A practical home prize with broad family appeal."
+      ]
+    },
+    {
+      "id": "11941",
+      "title": "HexClad Pots",
+      "price": "11.52",
+      "inventory": 4,
+      "sourceUrl": "https://app.screencast.com/3JrcYpTbIvzef",
+      "referenceScreenshot": "https://app.screencast.com/3JrcYpTbIvzef/thumbnail",
+      "image": "./assets/images/HexClad Pots.jfif",
+      "summary": "Enter for your chance to win HexClad Pots. This kitchen-focused offer is designed for home cooks who want stylish cookware with durable everyday performance.",
+      "features": [
+        "Modern cookware set designed for frequent home cooking.",
+        "Durable pots with a premium look and kitchen-friendly appeal.",
+        "Great for gifting, kitchen upgrades, and new-home setups.",
+        "A recognizable cookware prize with wide audience interest."
+      ]
+    },
+    {
+      "id": "11940",
+      "title": "Sports First Responder Medical Kit",
+      "price": "11.49",
+      "inventory": 3,
+      "timer": "03:28",
+      "formTitle": "Fill Out Your Details:",
+      "stockColor": "#e11c24",
+      "buttonColor": "#e6752a",
+      "sourceUrl": "https://app.screencast.com/f286G9KFDIU8v",
+      "referenceScreenshot": "https://app.screencast.com/f286G9KFDIU8v/thumbnail",
+      "image": "./assets/images/Sports First Responder Medical Kit.jfif",
+      "summary": "",
+      "features": [
+        "Designed for first responders",
+        "Contains essential medical supplies for emergencies",
+        "CPR face shields",
+        "Instant cold packs",
+        "Various dressings",
+        "Bandages",
+        "Biohazard bags",
+        "Gloves."
+      ]
+    }
+  ]
+}

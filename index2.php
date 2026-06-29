@@ -134,7 +134,15 @@ try {
     $isCustomMode = ($settings->theme_type === 'custom');
 
     // Handle theme-specific routing
-    if ($effectiveTheme === 'Colorful' && basename($_SERVER['PHP_SELF']) !== 'index1.php') {
+    if ($effectiveTheme === 'adaptive-lp' && basename($_SERVER['PHP_SELF']) !== 'index6.php') {
+        $query = $_GET;
+        $queryString = !empty($query) ? '?' . http_build_query($query) : '';
+        $redirectUrl = '/index6.php' . $queryString;
+        error_log("REDIRECT TO: " . $redirectUrl);
+
+        header('Location: ' . $redirectUrl);
+        exit;
+    } elseif ($effectiveTheme === 'Colorful' && basename($_SERVER['PHP_SELF']) !== 'index1.php') {
         // Redirect to index1.php for Colorful theme
         $query = $_GET;
         $queryString = !empty($query) ? '?' . http_build_query($query) : '';
