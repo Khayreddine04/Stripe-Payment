@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 /**
  * Author:     CriticalGears (http://www.CriticalGears.io)
