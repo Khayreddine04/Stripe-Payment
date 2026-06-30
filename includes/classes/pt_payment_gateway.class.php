@@ -79,7 +79,7 @@ class PT_Payment_Gateway
 
     private static function addColumnIfMissing($db, $table, $column, $definition)
     {
-        if (!pt_table_exists($table) || pt_column_exists($table, $column)) {
+        if (!self::tableExists($db, $table) || self::columnExists($db, $table, $column)) {
             return;
         }
         $db->query("ALTER TABLE `{$table}` ADD COLUMN `{$column}` {$definition}");
@@ -87,7 +87,7 @@ class PT_Payment_Gateway
 
     private static function addIndexIfMissing($db, $table, $indexName, $column)
     {
-        if (!pt_table_exists($table) || !pt_column_exists($table, $column)) {
+        if (!self::tableExists($db, $table) || !self::columnExists($db, $table, $column)) {
             return;
         }
 
@@ -100,6 +100,24 @@ class PT_Payment_Gateway
         $db->query("ALTER TABLE `{$table}` ADD KEY `{$indexName}` (`{$column}`)");
     }
 
+    private static function tableExists($db, $table)
+    {
+        $safeTable = addslashes($table);
+        $res = $db->query("SHOW TABLES LIKE '{$safeTable}'");
+        return $res && !$res->error && $res->count > 0;
+    }
+
+    private static function columnExists($db, $table, $column)
+    {
+        if (!self::tableExists($db, $table)) {
+            return false;
+        }
+
+        $safeColumn = addslashes($column);
+        $res = $db->query("SHOW COLUMNS FROM `{$table}` LIKE '{$safeColumn}'");
+        return $res && !$res->error && $res->count > 0;
+    }
+
     public static function ensureDefaultStripeGateway()
     {
         $db = new PT_Db();
@@ -108,10 +126,10 @@ class PT_Payment_Gateway
         }
 
         $gatewayTable = $db->db_pr . 'payment_gateways';
-        if (!pt_table_exists($gatewayTable)) {
+        if (!self::tableExists($db, $gatewayTable)) {
             return false;
         }
-        if (!pt_table_exists($db->db_pr . 'settings')) {
+        if (!self::tableExists($db, $db->db_pr . 'settings')) {
             return true;
         }
 
@@ -157,7 +175,7 @@ class PT_Payment_Gateway
         $subscriptionsTable = $db->db_pr . 'subscriptions';
         $profileId = (int)$gateway['id'];
 
-        if (pt_table_exists($paymentsTable) && pt_column_exists($paymentsTable, 'gateway_profile_id')) {
+        if (self::tableExists($db, $paymentsTable) && self::columnExists($db, $paymentsTable, 'gateway_profile_id')) {
             $db->query("UPDATE `{$paymentsTable}` SET
                 gateway_profile_id = '{$profileId}',
                 gateway_code = 'stripe_default',
@@ -166,7 +184,7 @@ class PT_Payment_Gateway
                 WHERE processor IN ('stripe', 'stripe_direct') AND gateway_profile_id IS NULL");
         }
 
-        if (pt_table_exists($subscriptionsTable) && pt_column_exists($subscriptionsTable, 'gateway_profile_id')) {
+        if (self::tableExists($db, $subscriptionsTable) && self::columnExists($db, $subscriptionsTable, 'gateway_profile_id')) {
             $db->query("UPDATE `{$subscriptionsTable}` SET
                 gateway_profile_id = '{$profileId}',
                 gateway_code = 'stripe_default',
@@ -186,7 +204,7 @@ class PT_Payment_Gateway
         }
 
         $table = $db->db_pr . 'payment_gateways';
-        if (!pt_table_exists($table)) {
+        if (!self::tableExists($db, $table)) {
             return array();
         }
 
@@ -241,7 +259,7 @@ class PT_Payment_Gateway
         }
 
         $table = $db->db_pr . 'payment_gateways';
-        if (!pt_table_exists($table)) {
+        if (!self::tableExists($db, $table)) {
             return false;
         }
 
@@ -265,7 +283,7 @@ class PT_Payment_Gateway
         }
 
         $table = $db->db_pr . 'payment_gateways';
-        if (!pt_table_exists($table)) {
+        if (!self::tableExists($db, $table)) {
             return false;
         }
 
@@ -296,7 +314,7 @@ class PT_Payment_Gateway
         $itemGatewayTable = $db->db_pr . 'item_payment_gateways';
         $gatewayTable = $db->db_pr . 'payment_gateways';
 
-        if ($itemId !== '' && pt_table_exists($itemGatewayTable) && pt_table_exists($gatewayTable)) {
+        if ($itemId !== '' && self::tableExists($db, $itemGatewayTable) && self::tableExists($db, $gatewayTable)) {
             $safeItemId = mysqli_real_escape_string($db->link, $itemId);
             $safePaymentType = mysqli_real_escape_string($db->link, $paymentType ?: 'any');
             $res = $db->query("SELECT g.*
@@ -332,7 +350,7 @@ class PT_Payment_Gateway
         }
 
         $table = $db->db_pr . 'item_payment_gateways';
-        if (!pt_table_exists($table)) {
+        if (!self::tableExists($db, $table)) {
             return 0;
         }
 
@@ -353,7 +371,7 @@ class PT_Payment_Gateway
         }
 
         $table = $db->db_pr . 'item_payment_gateways';
-        if (!pt_table_exists($table)) {
+        if (!self::tableExists($db, $table)) {
             self::ensureSchema();
         }
 
