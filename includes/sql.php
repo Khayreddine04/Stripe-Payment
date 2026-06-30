@@ -210,6 +210,10 @@ $query="CREATE TABLE IF NOT EXISTS `{$db_pr}payments` (
   `dateCreated` datetime NOT NULL,
   `comments` text,
   `processor` enum('paypal','stripe','stripe_direct') NOT NULL DEFAULT 'stripe',
+  `gateway_profile_id` INT UNSIGNED NULL,
+  `gateway_code` VARCHAR(80) NULL,
+  `gateway_type` VARCHAR(40) NULL,
+  `gateway_label` VARCHAR(150) NULL,
   `billingAddress1` varchar(200) NOT NULL,
   `billingAddress2` varchar(200) NOT NULL,
   `billingCity` varchar(150) NOT NULL,
@@ -269,6 +273,10 @@ $query="CREATE TABLE IF NOT EXISTS `{$db_pr}subscriptions` (
   `dateCancelation` datetime DEFAULT NULL,
   `comments` text,
   `processor` enum('paypal','stripe') NOT NULL DEFAULT 'stripe',
+  `gateway_profile_id` INT UNSIGNED NULL,
+  `gateway_code` VARCHAR(80) NULL,
+  `gateway_type` VARCHAR(40) NULL,
+  `gateway_label` VARCHAR(150) NULL,
   `period` enum('day','week','month','year') NOT NULL,
   `period_count` int(11) NOT NULL,
   `trial_days` INT NOT NULL,
@@ -297,6 +305,69 @@ if (empty($res->error)) {
 
 } else {
     $c->addError("Can't create {$db_pr}subscriptions!");
+    $BWContinue = false;
+}
+
+//  payment gateway profiles table
+
+$query="CREATE TABLE IF NOT EXISTS `{$db_pr}payment_gateways` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `gateway_code` VARCHAR(80) NOT NULL,
+  `gateway_type` VARCHAR(40) NOT NULL DEFAULT 'stripe',
+  `label` VARCHAR(150) NOT NULL,
+  `mode` ENUM('test','live') NOT NULL DEFAULT 'test',
+  `public_key` TEXT NULL,
+  `secret_key` TEXT NULL,
+  `webhook_secret` TEXT NULL,
+  `config_json` LONGTEXT NULL,
+  `is_active` TINYINT(1) NOT NULL DEFAULT 1,
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  `priority` INT NOT NULL DEFAULT 100,
+  `supports_one_time` TINYINT(1) NOT NULL DEFAULT 1,
+  `supports_recurring` TINYINT(1) NOT NULL DEFAULT 1,
+  `supports_payment_request` TINYINT(1) NOT NULL DEFAULT 1,
+  `supported_currencies` TEXT NULL,
+  `supported_countries` TEXT NULL,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `gateway_code_unique` (`gateway_code`),
+  KEY `gateway_type_index` (`gateway_type`),
+  KEY `is_active_index` (`is_active`),
+  KEY `is_default_index` (`is_default`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+$res = $c->query($query);
+
+if (empty($res->error)) {
+    $c->addSuccess("Created table '{$db_pr}payment_gateways'");
+} else {
+    $c->addError("Can't create {$db_pr}payment_gateways!");
+    $BWContinue = false;
+}
+
+//  item payment gateway assignments table
+
+$query="CREATE TABLE IF NOT EXISTS `{$db_pr}item_payment_gateways` (
+  `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `item_id` VARCHAR(80) NOT NULL,
+  `gateway_profile_id` INT UNSIGNED NOT NULL,
+  `payment_type` VARCHAR(40) NOT NULL DEFAULT 'any',
+  `is_default` TINYINT(1) NOT NULL DEFAULT 0,
+  `priority` INT NOT NULL DEFAULT 100,
+  `created` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated` DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `item_gateway_payment_unique` (`item_id`, `gateway_profile_id`, `payment_type`),
+  KEY `item_id_index` (`item_id`),
+  KEY `gateway_profile_id_index` (`gateway_profile_id`),
+  KEY `payment_type_index` (`payment_type`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;";
+$res = $c->query($query);
+
+if (empty($res->error)) {
+    $c->addSuccess("Created table '{$db_pr}item_payment_gateways'");
+} else {
+    $c->addError("Can't create {$db_pr}item_payment_gateways!");
     $BWContinue = false;
 }
 

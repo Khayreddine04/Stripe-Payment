@@ -18,6 +18,7 @@
     <li class="<?php echo($section=="fee_settings"?"active":"") ?>"><a href="fee_settings.php">Service Fee Settings</a></li>
     <li class="<?php echo($section=="currency_settings"?"active":"") ?>"><a href="currency_settings.php">Currency Settings</a></li>
     <li class="<?php echo($section=="terminal_settings"?"active":"") ?>"><a href="terminal_settings.php">Stripe Settings</a></li>
+    <li class="<?php echo($section=="payment_gateways"?"active":"") ?>"><a href="payment_gateways.php">Payment Gateways</a></li>
     <li class="<?php echo($section=="domains"?"active":"") ?>"><a href="domains.php">Domains</a></li>
 
     <li class="<?php echo($section=="payment_button"?"active":"") ?>"><a href="payment_button.php">GPay & Apple Pay</a></li>

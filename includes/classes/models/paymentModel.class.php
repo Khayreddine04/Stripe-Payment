@@ -104,7 +104,13 @@ class paymentModel {
             `currency_position` = '{$data['currency_position']}',
             `stripeCharge` = '{$data['stripeCharge']}',
             `stripeCustomer` = '{$data['stripeCustomer']}',
-            `stripeSubscription` = '{$data['stripeSubscription']}',";
+            `stripeSubscription` = '{$data['stripeSubscription']}'";
+
+        if (class_exists('PT_Payment_Gateway')) {
+            $sql .= PT_Payment_Gateway::sqlAssignments($data, $this->db);
+        }
+
+        $sql .= ",";
 
 
             /* check if item's exempt or not and add tax to or_amount in that case */
@@ -219,6 +225,9 @@ class paymentModel {
             `stripeSubscription` = '{$data['stripeSubscription']}',
             `idCustomer` = '{$data['idCustomer']}',
             `imported` = 'y'";
+        if (class_exists('PT_Payment_Gateway')) {
+            $sql .= PT_Payment_Gateway::sqlAssignments($data, $this->db);
+        }
         $res = $this->db->query($sql);
         if($res->count<1)
             return false;
@@ -265,6 +274,9 @@ class paymentModel {
             `stripeSubscription` = '{$data['stripeSubscription']}',
             `paypalSubscription` = '{$data['paypalSubscription']}',
             `imported` = 'y'";
+        if (class_exists('PT_Payment_Gateway')) {
+            $sql .= PT_Payment_Gateway::sqlAssignments($data, $this->db);
+        }
         //PT_Core::_dump($sql);
         $res = $this->db->query($sql);
         if($res->count<1)

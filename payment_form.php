@@ -53,6 +53,7 @@ function getConvenientCurrencyData($countryCode, $ctc, $serviceId)
 
 $payment = new PT_Stripe_Payment();
 $payment->setVariableSettings();
+$payment->applyGatewayFromRequest();
 
 $header = new PT_Template("header.php");
 $header->title = $settings->page_title;
@@ -158,8 +159,12 @@ if (!empty($idInvoice)) {
 
 $show_form = true;
 if ($pt_action == 'do_payment') {
-    // Initialize Stripe with the API key
-    \Stripe\Stripe::setApiKey($settings->stripe_secret_key);
+    $selected_gateway = class_exists('PT_Payment_Gateway') ? PT_Payment_Gateway::resolve($pt_service, $pt_type, $c->esc('gateway_code')) : false;
+    if ($selected_gateway && !empty($selected_gateway['secret_key'])) {
+        \Stripe\Stripe::setApiKey($selected_gateway['secret_key']);
+    } else {
+        \Stripe\Stripe::setApiKey($settings->terminal_payment_mode == 'live' ? $settings->live_secret_key : $settings->test_secret_key);
+    }
 
     // Get the payment method ID from the form
     $payment_method_id = $c->esc('payment_method');
@@ -273,8 +278,10 @@ if ($pt_action == 'do_payment') {
             global $CURRENCY_SYMBOLS; // Make sure we have access to currency symbols
 
             $stripe = new PT_Stripe_Payment();
+            if (!empty($selected_gateway)) {
+                $stripe->setGatewayProfile($selected_gateway);
+            }
             $stripe->convenient_currency_data = $currencyData;
-            $stripe->setAPIKeys($settings->stripe_secret_key, $settings->stripe_publishable_key);
             $stripe->setAmount($pt_amount);
 
             // Get the currency code from the form data or use EUR as default

@@ -52,6 +52,8 @@ class PT_Stripe_Payment extends PT_Payment
 
     public $convenient_currency_data = null;
 
+    public $gateway_profile = null;
+
     function __construct()
     {
         parent::__construct();
@@ -61,7 +63,78 @@ class PT_Stripe_Payment extends PT_Payment
         } else {
             $this->setVariableSettings();
         }
+        $this->applyGatewayFromRequest();
         $this->setStripeAppInfo();
+    }
+
+    public function setGatewayProfile($gateway)
+    {
+        if (empty($gateway) || !is_array($gateway)) {
+            return false;
+        }
+
+        $this->gateway_profile = $gateway;
+        $this->settings['gateway_profile_id'] = (int)$gateway['id'];
+        $this->settings['gateway_code'] = $gateway['gateway_code'];
+        $this->settings['gateway_type'] = $gateway['gateway_type'];
+        $this->settings['gateway_label'] = $gateway['label'];
+
+        if (!empty($gateway['public_key'])) {
+            $this->settings['public_key'] = $gateway['public_key'];
+        }
+        if (!empty($gateway['secret_key'])) {
+            $this->settings['secret_key'] = $gateway['secret_key'];
+        }
+
+        return true;
+    }
+
+    public function applyGatewayFromRequest()
+    {
+        if (!class_exists('PT_Payment_Gateway')) {
+            return false;
+        }
+
+        $post = $this->core->post;
+        $itemId = $post['pt_service'] ?? $_REQUEST['pt_service'] ?? $_REQUEST['service'] ?? $_REQUEST['item_id'] ?? '';
+        $paymentType = $post['pt_type'] ?? $_REQUEST['pt_type'] ?? 'card';
+        $gatewayCode = $post['gateway_code'] ?? $_REQUEST['gateway_code'] ?? '';
+
+        $gateway = PT_Payment_Gateway::resolve($itemId, $paymentType, $gatewayCode);
+        if ($gateway) {
+            return $this->setGatewayProfile($gateway);
+        }
+
+        return false;
+    }
+
+    private function getGatewayRecordFields()
+    {
+        if (class_exists('PT_Payment_Gateway')) {
+            if (empty($this->gateway_profile)) {
+                $this->applyGatewayFromRequest();
+            }
+            return PT_Payment_Gateway::fieldsFromGateway($this->gateway_profile);
+        }
+
+        return array();
+    }
+
+    private function loadGatewayForPayment($paymentDetails)
+    {
+        if (!class_exists('PT_Payment_Gateway') || empty($paymentDetails)) {
+            return false;
+        }
+
+        if (!empty($paymentDetails['gateway_code'])) {
+            $gateway = PT_Payment_Gateway::getByCode($paymentDetails['gateway_code']);
+        } elseif (!empty($paymentDetails['gateway_profile_id'])) {
+            $gateway = PT_Payment_Gateway::getById($paymentDetails['gateway_profile_id']);
+        } else {
+            $gateway = PT_Payment_Gateway::getDefault('stripe');
+        }
+
+        return $gateway ? $this->setGatewayProfile($gateway) : false;
     }
 
     public function setStripeAppInfo()
@@ -807,7 +880,7 @@ class PT_Stripe_Payment extends PT_Payment
                 'stripeCharge' => $charge_id,
                 'stripeCustomer' => '',
                 'stripeSubscription' => ''
-            ));
+            ) + $this->getGatewayRecordFields());
 
             if ($this->invoice_id != 0) {
                 $invoice = new invoiceModel();
@@ -957,6 +1030,7 @@ class PT_Stripe_Payment extends PT_Payment
                     'stripeCustomer' => $stripeCustomer,
                     'payment_method' => $this->core->post['payment_method']
                 );
+                $subscription_data = array_merge($subscription_data, $this->getGatewayRecordFields());
 
                 if ($this->convenient_currency_data) {
                     $subscription_data['amount'] = $this->convenient_currency_data['subscription_amount']['amount_numeric'];
@@ -1054,6 +1128,13 @@ class PT_Stripe_Payment extends PT_Payment
         } else {
             $this->subscription_id = $post['pt_subscription_id'];
             try {
+                if (class_exists('PT_Payment_Gateway')) {
+                    $subscriptionModel = new subscriptionModel();
+                    $subscriptionData = $subscriptionModel->getSubscriptionByTrn($post['pt_subscription_id']);
+                    if ($subscriptionData) {
+                        $this->loadGatewayForPayment($subscriptionData);
+                    }
+                }
                 \Stripe\Stripe::setApiKey($this->secret_key);
                 $cu = \Stripe\Subscription::retrieve($post['pt_subscription_id']);
                 $cu->delete();
@@ -1161,6 +1242,7 @@ class PT_Stripe_Payment extends PT_Payment
             if (!empty($payment['invoice']['subscription'])) {
                 $payment_data['stripeSubscription'] = $payment['invoice']['subscription'];
             }
+            $payment_data = array_merge($payment_data, $this->getGatewayRecordFields());
             /*PT_Core::_dump($payment['customer']['id']);
             PT_Core::_dump($payment['invoice']['subscription']);
             PT_Core::_dump($payment_data);
@@ -1182,6 +1264,7 @@ class PT_Stripe_Payment extends PT_Payment
         $payment = new paymentModel();
         $payment->setID($transaction_id);
         $paymentDetails = $payment->getPayment();
+        $this->loadGatewayForPayment($paymentDetails);
         if ($amount > $paymentDetails['amount']) {
             return "Refund amount must be less or equal payment amount";
         }
@@ -1231,8 +1314,19 @@ class PT_Stripe_Payment extends PT_Payment
     public function processWebhook()
     {
         $settings = PT_Settings::instance();
-        // This is your Stripe CLI webhook secret for testing your endpoint locally.
         $endpoint_secret = $settings->webhook_secret_key;
+
+        if (class_exists('PT_Payment_Gateway')) {
+            $gatewayCode = isset($_GET['gateway']) ? trim((string)$_GET['gateway']) : '';
+            $gateway = $gatewayCode !== '' ? PT_Payment_Gateway::getByCode($gatewayCode) : PT_Payment_Gateway::getDefault('stripe');
+            if (!$gateway || $gateway['gateway_type'] !== 'stripe') {
+                http_response_code(400);
+                echo 'Unknown Stripe gateway';
+                exit();
+            }
+            $this->setGatewayProfile($gateway);
+            $endpoint_secret = $gateway['webhook_secret'];
+        }
 
         $payload = @file_get_contents('php://input');
         $sig_header = $_SERVER['HTTP_STRIPE_SIGNATURE'] ?? "";
@@ -1369,6 +1463,7 @@ class PT_Stripe_Payment extends PT_Payment
                 'clickid' => $_POST['clickid'] ?? '',
                 'source' => $_POST['source'] ?? ''
             );
+            $payment_data = array_merge($payment_data, $this->getGatewayRecordFields());
 
             $paymentId = $paymentModel->importPayment($payment_data);
 

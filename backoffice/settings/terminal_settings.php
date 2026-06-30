@@ -49,6 +49,20 @@ if($action=='save_settings'){
     $settings->updateOption("test_secret_key",$test_secret_key);
     $settings->updateOption("terminal_payment_mode",$terminal_payment_mode);
 	$settings->updateOption("webhook_secret_key",$webhook_secret_key);
+    if (class_exists('PT_Payment_Gateway')) {
+        PT_Payment_Gateway::ensureSchema();
+        $gatewayTable = $db_pr . "payment_gateways";
+        $activePublicKey = $terminal_payment_mode == 'live' ? $live_public_key : $test_public_key;
+        $activeSecretKey = $terminal_payment_mode == 'live' ? $live_secret_key : $test_secret_key;
+        $a->query("UPDATE `{$gatewayTable}` SET
+            mode = '{$terminal_payment_mode}',
+            public_key = '" . mysqli_real_escape_string($a->link, $activePublicKey) . "',
+            secret_key = '" . mysqli_real_escape_string($a->link, $activeSecretKey) . "',
+            webhook_secret = '" . mysqli_real_escape_string($a->link, $webhook_secret_key) . "',
+            is_active = '1',
+            is_default = '1'
+            WHERE gateway_code = 'stripe_default'");
+    }
     //if admin is setting mode to LIVE - let's enable SSL, however if switching to TEST - don't switch off HTTPS redirection
     if($terminal_payment_mode=="live"){
         $settings->updateOption("redirect_https","y");

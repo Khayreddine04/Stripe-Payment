@@ -170,6 +170,10 @@ class subscriptionModel
             `stripeCustomer` = '',
             `imported` = 'n'";
 
+        if (class_exists('PT_Payment_Gateway')) {
+            $sql .= PT_Payment_Gateway::sqlAssignments($data, $this->db);
+        }
+
         if (!empty($data['idItem'])) {
             $item_amount = itemModel::getItemAmount($data['idItem']);
         } else {
@@ -501,6 +505,10 @@ class subscriptionModel
                 `is_upfront_fee` = '1',
                 `upfront_subscription_id` = '" . mysqli_real_escape_string($this->db->link, $subscriptionId) . "',
                 `imported` = 'n'";
+
+            if (class_exists('PT_Payment_Gateway')) {
+                $createPaymentSql .= PT_Payment_Gateway::sqlAssignments($this->subscriptionData, $this->db);
+            }
 
             $createRes = $this->db->query($createPaymentSql);
             if (!$createRes) {

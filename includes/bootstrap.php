@@ -376,6 +376,10 @@ if (!function_exists('pt_column_exists')) {
     }
 }
 
+if (class_exists('PT_Payment_Gateway')) {
+    PT_Payment_Gateway::ensureSchema();
+}
+
 if (!function_exists('pt_get_setting_option')) {
     function pt_get_setting_option($optionName, $default = '')
     {

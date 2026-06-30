@@ -55,8 +55,12 @@ $allowOverride = $a->esc("allowOverride", 'n');
 
 $domainsTable = $db_pr . "domains";
 $itemDomainsTable = $db_pr . "item_domains";
+$paymentGatewaysTable = $db_pr . "payment_gateways";
+$itemPaymentGatewaysTable = $db_pr . "item_payment_gateways";
 $activeDomains = array();
 $selectedItemDomainIds = array();
+$activePaymentGateways = array();
+$selectedGatewayProfileId = 0;
 
 function pt_admin_edit_table_exists($a, $tableName)
 {
@@ -182,6 +186,9 @@ if ($action == 'update') {
                 $postedDomainIds = isset($_POST['item_domains']) && is_array($_POST['item_domains']) ? $_POST['item_domains'] : array();
                 pt_admin_save_item_domains($a, $$pt_id, $postedDomainIds, $itemDomainsTable);
             }
+            if (class_exists('PT_Payment_Gateway')) {
+                PT_Payment_Gateway::setItemGateway($$pt_id, (int)$a->esc('gateway_profile_id', 0));
+            }
         } else {
             $itemTrialUpfrontSql = $hasItemTrialUpfrontColumn ? "itemTrialUpfront = '{$itemTrialUpfrontValue}'," : "";
 
@@ -216,6 +223,9 @@ if ($action == 'update') {
             if ($domainFeatureReady) {
                 $postedDomainIds = isset($_POST['item_domains']) && is_array($_POST['item_domains']) ? $_POST['item_domains'] : array();
                 pt_admin_save_item_domains($a, $$pt_id, $postedDomainIds, $itemDomainsTable);
+            }
+            if (class_exists('PT_Payment_Gateway')) {
+                PT_Payment_Gateway::setItemGateway($$pt_id, (int)$a->esc('gateway_profile_id', 0));
             }
         }
     }
@@ -270,6 +280,19 @@ if ($domainFeatureReady) {
                 $selectedItemDomainIds[$postedDomainId] = true;
             }
         }
+    }
+}
+
+if (class_exists('PT_Payment_Gateway')) {
+    PT_Payment_Gateway::ensureSchema();
+    $activePaymentGateways = PT_Payment_Gateway::getAll(true, 'stripe');
+
+    if (!empty($$pt_id)) {
+        $selectedGatewayProfileId = PT_Payment_Gateway::getSelectedForItem($$pt_id);
+    }
+
+    if ($action === 'update') {
+        $selectedGatewayProfileId = (int)$a->esc('gateway_profile_id', 0);
     }
 }
 
@@ -468,6 +491,22 @@ $__initial_theme_slug = !empty($itemDesign) ? $itemDesign : (empty($settings->se
                                     <?php } ?>
                                 </div>
                             <?php } ?>
+                            <div class="form-group col-md-6 col-sm-6">
+                                <label for="gateway_profile_id">Payment Gateway Account</label>
+                                <select name="gateway_profile_id" id="gateway_profile_id" class="form-control">
+                                    <option value="0">Default Gateway</option>
+                                    <?php foreach ($activePaymentGateways as $gatewayRow) {
+                                        $gatewayId = (int)$gatewayRow['id'];
+                                        $selected = $selectedGatewayProfileId === $gatewayId ? 'selected' : '';
+                                        $defaultText = ((int)$gatewayRow['is_default'] === 1) ? ' (Default)' : '';
+                                    ?>
+                                        <option value="<?php echo $gatewayId ?>" <?php echo $selected ?>>
+                                            <?php echo htmlspecialchars($gatewayRow['label'] . ' - ' . $gatewayRow['gateway_code'] . $defaultText) ?>
+                                        </option>
+                                    <?php } ?>
+                                </select>
+                                <small class="text-muted">This account will receive payments for this item. If empty, the default gateway is used.</small>
+                            </div>
                             <div class="form-group  col-md-6 col-sm-6">
                                 <label for="itemDesign">Design / Theme</label>
                                 <select name="itemDesign" id="itemDesign" class="form-control">
