@@ -249,7 +249,11 @@ if (!empty($$pt_id)) {
 if ($domainFeatureReady) {
     $activeRes = $a->query("SELECT id, domain FROM {$domainsTable} WHERE is_active='1' ORDER BY domain ASC");
     if ($activeRes && !$activeRes->error && $activeRes->count > 0) {
-        $activeDomains = $activeRes->result_array();
+        foreach ($activeRes->result_array() as $domainRow) {
+            if (!pt_is_checkout_domain_forced_inactive($domainRow['domain'] ?? '')) {
+                $activeDomains[] = $domainRow;
+            }
+        }
     }
 
     if (!empty($$pt_id)) {
