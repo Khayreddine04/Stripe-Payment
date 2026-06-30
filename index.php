@@ -1188,7 +1188,7 @@ if ($https) {
 </style>
 <script type="text/javascript">
     var stripe = Stripe('<?php echo $payment->public_key; ?>');
-    var script_url = "<?php echo $settings->siteUrl() ?>";
+    var script_url = "<?php echo rtrim($settings->siteUrl(), '/') ?>";
     var currency_rate = <?php echo json_encode($currency_rates) ?>;
     var fee_enabled = "<?php echo $settings->fee_enable ?>";
     var fee_type = <?php echo empty($settings->fee_type) ? 0 : $settings->fee_type ?>;
