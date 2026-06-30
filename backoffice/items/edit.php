@@ -14,6 +14,13 @@
 include_once "../includes/bootstrap.php";
 include_once "settings.php";
 
+if (!function_exists('pt_is_checkout_domain_forced_inactive')) {
+    function pt_is_checkout_domain_forced_inactive($host)
+    {
+        return false;
+    }
+}
+
 // Enable error reporting
 error_reporting(E_ALL);
 ini_set('display_errors', 1);

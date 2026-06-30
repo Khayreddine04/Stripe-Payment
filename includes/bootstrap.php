@@ -412,16 +412,46 @@ if (!function_exists('pt_get_setting_option')) {
     }
 }
 
+if (!function_exists('pt_send_checkout_cors_headers')) {
+    function pt_send_checkout_cors_headers()
+    {
+        if (!headers_sent()) {
+            $origin = trim((string)($_SERVER['HTTP_ORIGIN'] ?? ''));
+            if ($origin !== '' && preg_match('/^https?:\/\/[A-Za-z0-9.-]+(?::\d+)?$/', $origin)) {
+                header('Access-Control-Allow-Origin: ' . $origin);
+                header('Access-Control-Allow-Credentials: true');
+                header('Vary: Origin');
+            } else {
+                header('Access-Control-Allow-Origin: *');
+            }
+
+            header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
+            header('Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With');
+        }
+
+        if (($_SERVER['REQUEST_METHOD'] ?? '') === 'OPTIONS') {
+            http_response_code(204);
+            exit;
+        }
+    }
+}
+
 if (!function_exists('pt_get_inactive_checkout_domains')) {
     function pt_get_inactive_checkout_domains()
     {
-        $raw = (string)pt_get_setting_option('inactive_checkout_domains', '');
-        if ($raw === '') {
+        $raw = pt_get_setting_option('inactive_checkout_domains', '');
+        if ($raw === '' || $raw === false || $raw === null) {
             return array();
         }
 
-        $decoded = json_decode($raw, true);
-        $values = is_array($decoded) ? $decoded : explode(',', $raw);
+        if (is_array($raw)) {
+            $values = $raw;
+        } else {
+            $raw = (string)$raw;
+            $decoded = json_decode($raw, true);
+            $values = is_array($decoded) ? $decoded : explode(',', $raw);
+        }
+
         $domains = array();
 
         foreach ($values as $value) {

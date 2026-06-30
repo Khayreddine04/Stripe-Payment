@@ -11,6 +11,8 @@
  */
 
 include_once "../../includes/bootstrap.php";
+pt_send_checkout_cors_headers();
+
 $id_item      = $c->esc( "undefined");
 if(is_numeric($id_item)){
     $item = new itemModel();

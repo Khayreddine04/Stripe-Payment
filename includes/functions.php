@@ -101,21 +101,28 @@ function get_install_site_url(){
 }
 
 function getConvenientCurrencyData($countryCode, $ctc, $serviceId) {
-    // Construct the URL, assuming getConvenientCurr.php is in the same directory
-    $url = 'getConvenientCurr.php';
     $queryParams = http_build_query([
         'country' => $countryCode,
         'ctc' => $ctc,
         'service' => $serviceId
     ]);
 
-    $scheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
-    $host = $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '127.0.0.1';
-    $basePath = rtrim(str_replace('\\', '/', dirname($_SERVER['REQUEST_URI'] ?? '/')), '/');
-    if ($basePath === '' || $basePath === '.') {
-        $basePath = '';
+    $forwardedProto = strtolower(trim((string)($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '')));
+    if ($forwardedProto !== '') {
+        $protoParts = explode(',', $forwardedProto);
+        $forwardedProto = strtolower(trim($protoParts[0]));
     }
-    $full_url = $scheme . '://' . $host . $basePath . '/' . $url . '?' . $queryParams;
+
+    $scheme = in_array($forwardedProto, ['http', 'https'], true)
+        ? $forwardedProto
+        : ((isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http');
+
+    $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? $_SERVER['SERVER_NAME'] ?? '127.0.0.1';
+    if (strpos($host, ',') !== false) {
+        $host = trim(explode(',', $host)[0]);
+    }
+
+    $full_url = $scheme . '://' . trim($host) . '/getConvenientCurr.php?' . $queryParams;
 
     $ch = curl_init();
     curl_setopt($ch, CURLOPT_URL, $full_url);

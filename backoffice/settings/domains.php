@@ -47,13 +47,19 @@ function pt_admin_table_exists($a, $tableName)
 
 function pt_admin_get_inactive_checkout_domains($settings)
 {
-    $raw = (string)$settings->get('inactive_checkout_domains');
-    if ($raw === '') {
+    $raw = $settings->get('inactive_checkout_domains');
+    if ($raw === '' || $raw === false || $raw === null) {
         return array();
     }
 
-    $decoded = json_decode($raw, true);
-    $values = is_array($decoded) ? $decoded : explode(',', $raw);
+    if (is_array($raw)) {
+        $values = $raw;
+    } else {
+        $raw = (string)$raw;
+        $decoded = json_decode($raw, true);
+        $values = is_array($decoded) ? $decoded : explode(',', $raw);
+    }
+
     $domains = array();
 
     foreach ($values as $value) {

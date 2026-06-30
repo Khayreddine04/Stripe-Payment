@@ -1,5 +1,26 @@
 "use strict";
 
+function ptCheckoutAjaxUrl(path) {
+  var endpoint = path.charAt(0) === "/" ? path : "/" + path;
+  var base = typeof script_url === "string" ? script_url.replace(/\/+$/, "") : "";
+
+  if (!base) {
+    return endpoint;
+  }
+
+  try {
+    var parsed = new URL(base, window.location.origin);
+    if (parsed.origin !== window.location.origin) {
+      return endpoint;
+    }
+    return parsed.origin === window.location.origin && parsed.pathname === "/"
+      ? endpoint
+      : base + endpoint;
+  } catch (e) {
+    return endpoint;
+  }
+}
+
 // Progress Bar State Management
 function updateProgressBar(step) {
   const progressBar = document.querySelector(".progressbar");
@@ -206,7 +227,7 @@ function getTaxAmount(amount, scenario) {
 
     let product = $("#pt_service").find("option:selected");
     $.ajax({
-      url: script_url + "/backoffice/ajax/check_tax_exempt.php",
+      url: ptCheckoutAjaxUrl("/backoffice/ajax/check_tax_exempt.php"),
       data: product,
       type: "POST",
       async: false,
@@ -627,7 +648,7 @@ $().ready(function () {
 
         /* getting paymentIntentToken */
         $.ajax({
-          url: script_url + "/backoffice/ajax/get_stripe_payment_intent.php",
+          url: ptCheckoutAjaxUrl("/backoffice/ajax/get_stripe_payment_intent.php"),
           data: $(form).serializeArray(),
           type: "POST",
           dataType: "json",
@@ -678,7 +699,7 @@ $().ready(function () {
                       }
 
                       $.ajax({
-                        url: script_url + "/backoffice/ajax/get_recurring.php",
+                        url: ptCheckoutAjaxUrl("/backoffice/ajax/get_recurring.php"),
                         data: $(form).serializeArray(),
                         type: "POST",
                         dataType: "json",
@@ -961,7 +982,7 @@ function getStatesByCountry(countryId, statesContId) {
     .find("option:eq(0)")
     .html("Please wait..");
   $.ajax({
-    url: script_url + "/backoffice/ajax/get_states.php",
+    url: ptCheckoutAjaxUrl("/backoffice/ajax/get_states.php"),
     data: { countryId: countryId, pt_state: $("#pt_state_or").val() },
     type: "POST",
     async: false,
@@ -1182,7 +1203,7 @@ function create_gpay_button(amount, description) {
     }
 
     $.ajax({
-      url: script_url + "/backoffice/ajax/get_stripe_payment_intent.php",
+      url: ptCheckoutAjaxUrl("/backoffice/ajax/get_stripe_payment_intent.php"),
       data: $("#payment_form").serializeArray(),
       type: "POST",
       dataType: "json",

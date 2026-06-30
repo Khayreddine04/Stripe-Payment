@@ -11,10 +11,41 @@
  */
 
 include_once "../../includes/bootstrap.php";
+pt_send_checkout_cors_headers();
+header('Content-Type: application/json; charset=utf-8');
 
 // Ensure session is started
 if (session_status() === PHP_SESSION_NONE) {
     session_start();
+}
+
+if (!function_exists('pt_ajax_apply_payment_amounts')) {
+    function pt_ajax_apply_payment_amounts($amount, $currency, $upfrontFee = 0)
+    {
+        global $c;
+
+        $amount = is_numeric($amount) ? (string)$amount : '0';
+        $currency = strtoupper(trim((string)$currency));
+        if ($currency === '') {
+            $currency = 'USD';
+        }
+
+        $_POST['amount'] = $amount;
+        $_POST['pt_amount'] = $amount;
+        $_POST['pt_currency'] = $currency;
+        $_POST['pt_upfront'] = is_numeric($upfrontFee) ? (string)$upfrontFee : '0';
+        $_REQUEST['amount'] = $amount;
+        $_REQUEST['pt_amount'] = $amount;
+        $_REQUEST['pt_currency'] = $currency;
+        $_REQUEST['pt_upfront'] = $_POST['pt_upfront'];
+
+        if (isset($c) && is_object($c) && property_exists($c, 'post')) {
+            $c->post['amount'] = $amount;
+            $c->post['pt_amount'] = $amount;
+            $c->post['pt_currency'] = $currency;
+            $c->post['pt_upfront'] = $_POST['pt_upfront'];
+        }
+    }
 }
 
 // Log session contents for debugging
@@ -56,11 +87,7 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
     $amount = $api_currency_data['subscription_amount']['amount_numeric'];
     $currency = $api_currency_data['subscription_amount']['currency_code'];
     $upfront_fee = $api_currency_data['upfront_amount']['amount_numeric'] ?? 0;
-    
-    // Update the POST data
-    $_POST['pt_amount'] = $amount;
-    $_POST['pt_currency'] = $currency;
-    $_POST['pt_upfront'] = $upfront_fee;
+    pt_ajax_apply_payment_amounts($amount, $currency, $upfront_fee);
     
     // Also update the amount and currency variables used below
     $pt_amount = $amount;
@@ -93,11 +120,7 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
             $amount = $fetchedCurrencyData['subscription_amount']['amount_numeric'];
             $currency = $fetchedCurrencyData['subscription_amount']['currency_code'];
             $upfront_fee = $fetchedCurrencyData['upfront_amount']['amount_numeric'];
-
-            // Update the POST data
-            $_POST['pt_amount'] = $amount;
-            $_POST['pt_currency'] = $currency;
-            $_POST['pt_upfront'] = $upfront_fee;
+            pt_ajax_apply_payment_amounts($amount, $currency, $upfront_fee);
 
             // Also update the amount and currency variables used below
             $pt_amount = $amount;
@@ -119,7 +142,8 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
         // If no API data, try to get values from POST or use defaults
         $amount = $_POST['pt_amount'] ?? $amount ?? 0;
         $currency = $_POST['pt_currency'] ?? $currency ?? 'USD';
-        $upfront_fee = $_POST['upfront_fee'] ?? 0;
+        $upfront_fee = $_POST['pt_upfront'] ?? $_POST['upfront_fee'] ?? 0;
+        pt_ajax_apply_payment_amounts($amount, $currency, $upfront_fee);
     }
 }
 
