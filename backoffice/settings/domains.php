@@ -45,6 +45,64 @@ function pt_admin_table_exists($a, $tableName)
     return $res && !$res->error && $res->count > 0;
 }
 
+function pt_admin_get_inactive_checkout_domains($settings)
+{
+    $raw = (string)$settings->get('inactive_checkout_domains');
+    if ($raw === '') {
+        return array();
+    }
+
+    $decoded = json_decode($raw, true);
+    $values = is_array($decoded) ? $decoded : explode(',', $raw);
+    $domains = array();
+
+    foreach ($values as $value) {
+        $host = pt_admin_normalize_domain($value);
+        if ($host !== '') {
+            $domains[$host] = true;
+        }
+    }
+
+    return $domains;
+}
+
+function pt_admin_save_inactive_checkout_domains($settings, array $domains)
+{
+    $normalized = array();
+    foreach (array_keys($domains) as $domain) {
+        $host = pt_admin_normalize_domain($domain);
+        if ($host !== '') {
+            $normalized[$host] = true;
+        }
+    }
+
+    $settings->updateOption('inactive_checkout_domains', json_encode(array_keys($normalized)));
+}
+
+function pt_admin_mark_checkout_domain_inactive($settings, $domain)
+{
+    $host = pt_admin_normalize_domain($domain);
+    if ($host === '') {
+        return;
+    }
+
+    $domains = pt_admin_get_inactive_checkout_domains($settings);
+    $domains[$host] = true;
+    pt_admin_save_inactive_checkout_domains($settings, $domains);
+}
+
+function pt_admin_unmark_checkout_domain_inactive($settings, $domain)
+{
+    $host = pt_admin_normalize_domain($domain);
+    if ($host === '') {
+        return;
+    }
+
+    $domains = pt_admin_get_inactive_checkout_domains($settings);
+    unset($domains[$host]);
+    pt_admin_save_inactive_checkout_domains($settings, $domains);
+}
+
 $domainsTable = $db_pr . "domains";
 $featureReady = pt_admin_table_exists($a, $domainsTable);
 
@@ -63,7 +121,8 @@ if ($action === "set_default_domain") {
         if ($featureReady) {
             $safeDomain = addslashes($normalizedDefault);
             $check = $a->query("SELECT id FROM {$domainsTable} WHERE domain = '{$safeDomain}' AND is_active='1' LIMIT 1");
-            if (!$check || $check->error || $check->count < 1) {
+            $inactiveDomains = pt_admin_get_inactive_checkout_domains($settings);
+            if (!$check || $check->error || $check->count < 1 || isset($inactiveDomains[$normalizedDefault])) {
                 $a->addError("Default domain must be an active domain from the list.");
             }
         }
@@ -89,15 +148,18 @@ if ($featureReady && $action === "add_domain") {
 
         if ($exists && !$exists->error && $exists->count > 0) {
             $row = $exists->result_row();
-            if ($row['is_active'] === '1') {
+            if ((string)$row['is_active'] === '1') {
+                pt_admin_unmark_checkout_domain_inactive($settings, $normalizedDomain);
                 $a->addWarning("Domain already exists and is active.");
             } else {
                 $a->query("UPDATE {$domainsTable} SET is_active='1' WHERE id='{$row['id']}'");
+                pt_admin_unmark_checkout_domain_inactive($settings, $normalizedDomain);
                 $a->addSuccess("Domain re-activated successfully.");
                 st_do_action('add_user_log', "Re-activated domain: {$normalizedDomain}");
             }
         } else {
             $a->query("INSERT INTO {$domainsTable} SET domain='{$safeDomain}', is_active='1', created_at=NOW(), updated_at=NOW()");
+            pt_admin_unmark_checkout_domain_inactive($settings, $normalizedDomain);
             $a->addSuccess("Domain added successfully.");
             st_do_action('add_user_log', "Added domain: {$normalizedDomain}");
         }
@@ -109,9 +171,27 @@ if ($featureReady && $action === "set_domain_status") {
     if ($domainId <= 0) {
         $a->addError("Invalid domain ID.");
     } else {
-        $a->query("UPDATE {$domainsTable} SET is_active='{$status}', updated_at=NOW() WHERE id='{$domainId}'");
-        $a->addSuccess($status === '1' ? "Domain activated." : "Domain deactivated.");
-        st_do_action('add_user_log', ($status === '1' ? "Activated" : "Deactivated") . " domain id {$domainId}");
+        $resDomain = $a->query("SELECT domain FROM {$domainsTable} WHERE id='{$domainId}' LIMIT 1");
+        if (!$resDomain || $resDomain->error || $resDomain->count < 1) {
+            $a->addError("Domain not found.");
+        } else {
+            $domainRow = $resDomain->result_row();
+            $domainHost = pt_admin_normalize_domain((string)$domainRow['domain']);
+            $resUpdate = $a->query("UPDATE {$domainsTable} SET is_active='{$status}', updated_at=NOW() WHERE id='{$domainId}'");
+
+            if (!$resUpdate || $resUpdate->error) {
+                $a->addError("Could not update domain status.");
+            } else {
+                if ($status === '1') {
+                    pt_admin_unmark_checkout_domain_inactive($settings, $domainHost);
+                } else {
+                    pt_admin_mark_checkout_domain_inactive($settings, $domainHost);
+                }
+
+                $a->addSuccess($status === '1' ? "Domain activated." : "Domain deactivated.");
+                st_do_action('add_user_log', ($status === '1' ? "Activated" : "Deactivated") . " domain id {$domainId}");
+            }
+        }
     }
 }
 
@@ -129,7 +209,9 @@ if ($featureReady && $action === "hard_delete_domain") {
             $domainRow = $resDomain->result_row();
             $domainHost = (string)$domainRow['domain'];
 
-            if ($domainRow['is_active'] === '1') {
+            $inactiveDomains = pt_admin_get_inactive_checkout_domains($settings);
+            $isEffectivelyActive = (string)$domainRow['is_active'] === '1' && !isset($inactiveDomains[pt_admin_normalize_domain($domainHost)]);
+            if ($isEffectivelyActive) {
                 $a->addError("Deactivate domain first, then hard delete.");
             }
 
@@ -155,6 +237,7 @@ if ($featureReady && $action === "hard_delete_domain") {
 
             if (!$a->error) {
                 $a->query("DELETE FROM {$domainsTable} WHERE id='{$domainId}' LIMIT 1");
+                pt_admin_unmark_checkout_domain_inactive($settings, $domainHost);
                 $a->addSuccess("Domain hard deleted.");
                 st_do_action('add_user_log', "Hard deleted domain id {$domainId}: {$domainHost}");
             }
@@ -172,6 +255,7 @@ if ($featureReady) {
 
 $defaultDomain = (string)$settings->get('primary_checkout_domain');
 $defaultDomain = pt_admin_normalize_domain($defaultDomain);
+$inactiveCheckoutDomains = pt_admin_get_inactive_checkout_domains($settings);
 
 $a->getHeader();
 ?>
@@ -200,7 +284,8 @@ $a->getHeader();
                         <select class="form-control" name="primary_checkout_domain" id="primary_checkout_domain">
                             <option value="">No default domain</option>
                             <?php foreach ($domains as $row) {
-                                if ($row['is_active'] !== '1') {
+                                $rowDomain = pt_admin_normalize_domain($row['domain']);
+                                if ((string)$row['is_active'] !== '1' || isset($inactiveCheckoutDomains[$rowDomain])) {
                                     continue;
                                 }
                                 $selected = ($defaultDomain === $row['domain']) ? 'selected' : '';
@@ -247,7 +332,8 @@ $a->getHeader();
                                     </tr>
                                 <?php } else {
                                     foreach ($domains as $row) {
-                                        $isActive = $row['is_active'] === '1';
+                                        $rowDomain = pt_admin_normalize_domain($row['domain']);
+                                        $isActive = (string)$row['is_active'] === '1' && !isset($inactiveCheckoutDomains[$rowDomain]);
                                 ?>
                                         <tr>
                                             <td><?php echo (int)$row['id'] ?></td>

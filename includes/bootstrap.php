@@ -412,6 +412,42 @@ if (!function_exists('pt_get_setting_option')) {
     }
 }
 
+if (!function_exists('pt_get_inactive_checkout_domains')) {
+    function pt_get_inactive_checkout_domains()
+    {
+        $raw = (string)pt_get_setting_option('inactive_checkout_domains', '');
+        if ($raw === '') {
+            return array();
+        }
+
+        $decoded = json_decode($raw, true);
+        $values = is_array($decoded) ? $decoded : explode(',', $raw);
+        $domains = array();
+
+        foreach ($values as $value) {
+            $host = pt_normalize_host((string)$value);
+            if ($host !== '') {
+                $domains[$host] = true;
+            }
+        }
+
+        return $domains;
+    }
+}
+
+if (!function_exists('pt_is_checkout_domain_forced_inactive')) {
+    function pt_is_checkout_domain_forced_inactive($host)
+    {
+        $host = pt_normalize_host($host);
+        if ($host === '') {
+            return false;
+        }
+
+        $inactiveDomains = pt_get_inactive_checkout_domains();
+        return isset($inactiveDomains[$host]);
+    }
+}
+
 if (!function_exists('pt_get_item_id_by_invoice')) {
     function pt_get_item_id_by_invoice($idInvoice)
     {
@@ -528,7 +564,7 @@ if (!function_exists('pt_get_active_domains_for_item')) {
         $domains = array();
         foreach ($res->result_array() as $row) {
             $host = pt_normalize_host($row['domain'] ?? '');
-            if ($host !== '') {
+            if ($host !== '' && !pt_is_checkout_domain_forced_inactive($host)) {
                 $domains[$host] = $host;
             }
         }
@@ -565,6 +601,10 @@ if (!function_exists('pt_get_default_checkout_domain')) {
     {
         $domain = pt_normalize_host((string)pt_get_setting_option('primary_checkout_domain', ''));
         if ($domain === '') {
+            return false;
+        }
+
+        if (pt_is_checkout_domain_forced_inactive($domain)) {
             return false;
         }
 
