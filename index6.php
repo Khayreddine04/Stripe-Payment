@@ -418,7 +418,8 @@ if (!empty($service)) {
 
 
 // Fetch dynamic currency data if available
-$countryCodeForCurrency = !empty($_GET['country']) ? $_GET['country'] : $detectedCountry;
+$adaptiveDetectedCountry = preg_match('/^[A-Z]{2}$/', (string)$detectedCountry) ? strtoupper((string)$detectedCountry) : '';
+$countryCodeForCurrency = $adaptiveDetectedCountry;
 $ctcForCurrency = !empty($_GET['ctc']) ? $_GET['ctc'] : '2'; // Default to '2' as discussed
 $serviceIdForCurrency = $serviceId;
 
@@ -516,6 +517,58 @@ $stripeButton = $c->_esc("stripeButton");
 $stripeSubscriptionId = $c->_esc("subscription_id");
 
 $pt_terms = $c->_esc("pt_terms", 0);
+
+if ($pt_action == 'do_payment') {
+    $clickid = $c->_esc("clickid", $c->_esc("cid", $_GET['clickid'] ?? ($_GET['cid'] ?? '')));
+    $source = $c->_esc("source", $_GET['source'] ?? '');
+
+    if ($c->checkCaptcha()) {
+        $paymentResult = $payment->doPayment();
+        if ($paymentResult === true) {
+            $show_form = false;
+            if ($pt_type != 'paypal') {
+                if (!empty($settings->thank_you_redirect)) {
+                    $redirectUrl = $settings->thank_you_redirect;
+                    if (!empty($clickid)) {
+                        $separator = (parse_url($redirectUrl, PHP_URL_QUERY) == null) ? '?' : '&';
+                        $redirectUrl .= $separator . 'clickid=' . urlencode($clickid);
+                    }
+                    if (!empty($source)) {
+                        $separator = (parse_url($redirectUrl, PHP_URL_QUERY) == null) ? '?' : '&';
+                        $redirectUrl .= $separator . 'source=' . urlencode($source);
+                    }
+                    error_log("Redirecting to: " . $redirectUrl);
+                    header('Location: ' . $redirectUrl);
+                    exit();
+                }
+
+                $submit_data = array();
+                if (!empty($payment->payment_id)) {
+                    $submit_data['pt_payment'] = $payment->payment_id;
+                }
+                if (!empty($payment->subscription_id)) {
+                    $submit_data['pt_subscription'] = $payment->subscription_id;
+                }
+                if (!empty($clickid)) {
+                    $submit_data['clickid'] = $clickid;
+                }
+                if (!empty($source)) {
+                    $submit_data['source'] = $source;
+                }
+
+                $redirectUrl = 'payment_confirmation.php?' . http_build_query($submit_data);
+                error_log("Redirecting to: " . $redirectUrl);
+                header('Location: ' . $redirectUrl);
+                exit();
+            }
+        } else {
+            $c->setAlert("danger", "<span data-i18n=\"payment_failed\">Payment failed</span>: " . ($payment->error_message ?? 'Unknown error occurred'));
+            error_log("Payment failed: " . ($payment->error_message ?? 'Unknown error') . " - Payment ID: " . ($payment->payment_id ?? 'N/A'));
+        }
+    } else {
+        $c->setAlert("danger", "<span data-i18n=\"captcha_failed\">CAPTCHA verification failed. Please try again.</span>");
+    }
+}
 
 // Billing section removed for 'Minimalist' theme
 $billing_info = null;
@@ -682,6 +735,7 @@ $payment_info_data = array_merge($c->post, [
     'pt_currency' => $pt_currency,
     'pt_currency_symbol' => $pt_currency_symbol,
     'pt_currency_position' => $pt_currency_position,
+    'adaptive_detected_country' => $adaptiveDetectedCountry,
     'adaptive_upfront_amount' => $adaptiveUpfrontAmount,
     'adaptive_upfront_currency_symbol' => $adaptiveUpfrontCurrencySymbol
 ]);
@@ -709,6 +763,7 @@ $bottom_info_data = array_merge($c->post, [
     'pt_currency' => $pt_currency,
     'pt_currency_symbol' => $pt_currency_symbol,
     'pt_currency_position' => $pt_currency_position,
+    'adaptive_detected_country' => $adaptiveDetectedCountry,
     'amount' => '0',
     'billing_period' => '',
     'trial_text' => '',
@@ -858,64 +913,6 @@ if (!empty($invoice) && $https) {
     }
 }
 
-
-if ($pt_action == 'do_payment') {
-    // Get click ID from either 'clickid' or 'cid' parameter
-    $clickid = !empty($_GET['clickid']) ? $_GET['clickid'] : (!empty($_GET['cid']) ? $_GET['cid'] : '');
-    $source = !empty($_GET['source']) ? $_GET['source'] : '';
-
-    if ($c->checkCaptcha()) {
-        $paymentResult = $payment->doPayment();
-        if ($paymentResult === true) {
-            $show_form = false;
-            if ($pt_type != 'paypal') {
-                if (!empty($settings->thank_you_redirect)) {
-                    $redirectUrl = $settings->thank_you_redirect;
-                    // Add click ID if present in the URL
-                    if (!empty($clickid)) {
-                        $separator = (parse_url($redirectUrl, PHP_URL_QUERY) == null) ? '?' : '&';
-                        $redirectUrl .= $separator . 'clickid=' . urlencode($clickid);
-                    }
-                    // Add source if present
-                    if (!empty($source)) {
-                        $separator = (parse_url($redirectUrl, PHP_URL_QUERY) == null) ? '?' : '&';
-                        $redirectUrl .= $separator . 'source=' . urlencode($source);
-                    }
-                    error_log("Redirecting to: " . $redirectUrl);
-                    header('Location: ' . $redirectUrl);
-                    exit();
-                } else {
-                    $submit_data = array();
-                    if (!empty($payment->payment_id))
-                        $submit_data['pt_payment'] = $payment->payment_id;
-                    if (!empty($payment->payment_id))
-                        $submit_data['pt_subscription'] = $payment->subscription_id;
-
-                    // Add click ID if present
-                    if (!empty($clickid)) {
-                        $submit_data['clickid'] = $clickid;
-                    }
-
-                    // Add source if present
-                    if (!empty($source)) {
-                        $submit_data['source'] = $source;
-                    }
-
-                    $redirectUrl = 'payment_confirmation.php?' . http_build_query($submit_data);
-                    error_log("Redirecting to: " . $redirectUrl);
-                    header('Location: ' . $redirectUrl);
-                    exit();
-                }
-            }
-        } else {
-            // Payment failed, show error message
-            $c->setAlert("danger", "<span data-i18n=\"payment_failed\">Payment failed</span>: " . ($payment->error_message ?? 'Unknown error occurred'));
-            error_log("Payment failed: " . ($payment->error_message ?? 'Unknown error') . " - Payment ID: " . ($payment->payment_id ?? 'N/A'));
-        }
-    } else {
-        $c->setAlert("danger", "<span data-i18n=\"captcha_failed\">CAPTCHA verification failed. Please try again.</span>");
-    }
-}
 
 $header->render(true);
 

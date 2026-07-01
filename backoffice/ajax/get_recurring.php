@@ -48,6 +48,22 @@ if (!function_exists('pt_ajax_apply_payment_amounts')) {
     }
 }
 
+if (!function_exists('pt_ajax_currency_session_matches_checkout')) {
+    function pt_ajax_currency_session_matches_checkout($data, $serviceId, $ctc)
+    {
+        if (!is_array($data) || empty($data['subscription_amount']['amount_numeric'])) {
+            return false;
+        }
+
+        $sessionServiceId = trim((string)($data['service_id'] ?? ''));
+        $sessionCtc = trim((string)($data['ctc'] ?? ''));
+
+        return $sessionServiceId !== ''
+            && $sessionServiceId === trim((string)$serviceId)
+            && ($sessionCtc === '' || $sessionCtc === trim((string)$ctc));
+    }
+}
+
 // Log session contents for debugging
 error_log("=== SESSION DATA AT RECURRING PAYMENT ===");
 error_log("Session ID: " . session_id());
@@ -58,9 +74,12 @@ $amount      = $c->_esc( "amount" );
 $pt_amount   = $c->_esc( "pt_amount", $amount );
 $currency    = $c->_esc( "currency" );
 $pt_currency = $c->_esc( "pt_currency", $currency );
+$pt_service_for_currency = $c->_esc("pt_service", $c->_esc("service"));
+$pt_ctc_for_currency = $c->_esc("pt_ctc");
 
 // Extract API currency data from session and override POST data if available
 $api_currency_data = $_SESSION['api_currency_data'] ?? null;
+$api_currency_data = pt_ajax_currency_session_matches_checkout($api_currency_data, $pt_service_for_currency, $pt_ctc_for_currency) ? $api_currency_data : null;
 
 if ($api_currency_data && isset($api_currency_data['subscription_amount']['amount_numeric'])) {
     error_log("Using API currency data for recurring payment from session");
@@ -84,7 +103,7 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
     include_once "../../includes/functions.php";
 
     // Get parameters from POST
-    $countryCode = $c->_esc("pt_country");
+    $countryCode = "";
     $ctc = $c->_esc("pt_ctc");
     $serviceId = $c->_esc("pt_service");
 

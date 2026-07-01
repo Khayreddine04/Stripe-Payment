@@ -1,10 +1,10 @@
 <?php
 $ctc = htmlspecialchars($_GET['ctc'] ?? '2', ENT_QUOTES);
-$country = htmlspecialchars($_GET['country'] ?? 'US', ENT_QUOTES);
+$country = htmlspecialchars($adaptive_detected_country ?? ($post['pt_country'] ?? ''), ENT_QUOTES);
 $serviceId = htmlspecialchars($_GET['service'] ?? '', ENT_QUOTES);
 $amountValue = htmlspecialchars($pt_amount ?? ($post['pt_amount'] ?? '0.00'), ENT_QUOTES);
-$currencyValue = htmlspecialchars($pt_currency ?? ($post['pt_currency'] ?? $currency_text ?? 'USD'), ENT_QUOTES);
-$currencySymbolValue = htmlspecialchars($pt_currency_symbol ?? $display_currency ?? '$', ENT_QUOTES);
+$currencyValue = htmlspecialchars($pt_currency ?? ($post['pt_currency'] ?? $currency_text ?? ''), ENT_QUOTES);
+$currencySymbolValue = htmlspecialchars($pt_currency_symbol ?? $display_currency ?? '', ENT_QUOTES);
 $currencyPositionValue = htmlspecialchars($pt_currency_position ?? $currency_position ?? 'before', ENT_QUOTES);
 $upfrontAmountValue = isset($adaptive_upfront_amount) ? htmlspecialchars(number_format((float)$adaptive_upfront_amount, 2, '.', ''), ENT_QUOTES) : '';
 $upfrontCurrencySymbolValue = htmlspecialchars($adaptive_upfront_currency_symbol ?? '', ENT_QUOTES);
@@ -75,32 +75,40 @@ $footer = isset($lpItem['footer']) && is_array($lpItem['footer']) ? $lpItem['foo
 
 <script>
     function updateAmountsFromAPI() {
-        var country = $('#pt_country').val();
         var ctc = $('#pt_ctc').val();
         var serviceId = $('#pt_service').val();
 
-        if (!country || !ctc || !serviceId) return;
+        if (!ctc || !serviceId) return;
 
         $.get('getConvenientCurr.php', {
-            country: country,
+            country: $('#pt_country').val(),
             ctc: ctc,
             service: serviceId
         }, function (data) {
             if (!data || !data.success || !data.subscription_amount) return;
 
-            var amount = data.subscription_amount.amount_numeric || data.subscription_amount.amount || $('#pt_amount').val();
-            var currency = data.subscription_amount.currency_code || data.subscription_amount.currency || $('#pt_currency').val();
-            var symbol = data.subscription_amount.currency_symbol || currency || '';
+            var resolvedCountry = data.country || $('#pt_country').val();
+            var amount = data.subscription_amount.amount_numeric;
+            var currency = data.subscription_amount.currency_code || data.subscription_amount.currency || '';
+            var symbol = data.subscription_amount.currency_symbol || '';
 
+            if (amount === undefined || amount === null || amount === '' || !currency) return;
+
+            $('#pt_country').val(resolvedCountry);
+            $('#country').val(resolvedCountry);
             $('#pt_amount').val(amount);
             $('#pt_currency').val(currency);
+            $('input[name="amount"]').val(amount);
+            $('input[name="currency"]').val(currency);
             $('input[name="pt_currency_symbol"]').val(symbol);
+            $('input[name="pt_currency_position"]').val('before');
             $('.pt_currency_symbol').text(symbol);
             $('.total-amount').text(parseFloat(amount || 0).toFixed(2));
 
             if (data.upfront_amount) {
-                var upfrontAmount = data.upfront_amount.amount_numeric || data.upfront_amount.amount;
-                var upfrontSymbol = data.upfront_amount.currency_symbol || data.upfront_amount.currency_code || '';
+                var upfrontAmount = data.upfront_amount.amount_numeric;
+                var upfrontSymbol = data.upfront_amount.currency_symbol || '';
+                if (upfrontAmount === undefined || upfrontAmount === null || upfrontAmount === '') return;
                 $('.adaptive-upfront-currency-symbol').text(upfrontSymbol);
                 $('.adaptive-upfront-amount').text(parseFloat(upfrontAmount || 0).toFixed(2));
             }
@@ -110,7 +118,6 @@ $footer = isset($lpItem['footer']) && is_array($lpItem['footer']) ? $lpItem['foo
     $(document).ready(function () {
         updateAmountsFromAPI();
         $('#country').on('change', function () {
-            $('#pt_country').val($(this).val());
             updateAmountsFromAPI();
         });
         $('#pt_ctc').on('change', updateAmountsFromAPI);

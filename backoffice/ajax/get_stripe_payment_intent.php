@@ -48,6 +48,22 @@ if (!function_exists('pt_ajax_apply_payment_amounts')) {
     }
 }
 
+if (!function_exists('pt_ajax_currency_session_matches_checkout')) {
+    function pt_ajax_currency_session_matches_checkout($data, $serviceId, $ctc)
+    {
+        if (!is_array($data) || empty($data['subscription_amount']['amount_numeric'])) {
+            return false;
+        }
+
+        $sessionServiceId = trim((string)($data['service_id'] ?? ''));
+        $sessionCtc = trim((string)($data['ctc'] ?? ''));
+
+        return $sessionServiceId !== ''
+            && $sessionServiceId === trim((string)$serviceId)
+            && ($sessionCtc === '' || $sessionCtc === trim((string)$ctc));
+    }
+}
+
 // Log session contents for debugging
 error_log("=== SESSION DATA AT PAYMENT INTENT ===");
 error_log("Session ID: " . session_id());
@@ -74,11 +90,13 @@ $pt_description  = $c->_esc( "pt_description" );
 $invoice   = $c->_esc( "invoice", 0 );
 $idInvoice = $c->_esc( "idInvoice", 0 );
 $stripeButton = $c->_esc("stripeButton", 'n');
+$pt_ctc = $c->_esc("pt_ctc");
 
 $response = array( "res" => false, "msg" => "", "intent" => 0 );
 
 // Extract API currency data from session and override POST data if available
 $api_currency_data = $_SESSION['api_currency_data'] ?? null;
+$api_currency_data = pt_ajax_currency_session_matches_checkout($api_currency_data, $pt_service, $pt_ctc) ? $api_currency_data : null;
 
 if ($api_currency_data && isset($api_currency_data['subscription_amount']['amount_numeric'])) {
     error_log("Using API currency data for payment intent from session");
@@ -109,7 +127,7 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
     include_once "../../includes/functions.php";
 
     // Get parameters from POST
-    $countryCode = $c->_esc("pt_country");
+    $countryCode = "";
     $ctc = $c->_esc("pt_ctc");
     $serviceId = $c->_esc("pt_service");
 
