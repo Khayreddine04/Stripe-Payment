@@ -21,6 +21,60 @@ function ptCheckoutAjaxUrl(path) {
   }
 }
 
+var ptCheckoutTraceId = (function () {
+  try {
+    var storageKey = "pt_checkout_trace";
+    var existing = window.sessionStorage
+      ? window.sessionStorage.getItem(storageKey)
+      : "";
+    if (existing) {
+      return existing;
+    }
+
+    var generated =
+      Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+    if (window.sessionStorage) {
+      window.sessionStorage.setItem(storageKey, generated);
+    }
+    return generated;
+  } catch (e) {
+    return Date.now().toString(36) + Math.random().toString(36).slice(2, 10);
+  }
+})();
+
+function ptCheckoutTiming(step, extra) {
+  if (!window.console || !console.log) {
+    return;
+  }
+
+  var payload = {
+    trace: ptCheckoutTraceId,
+    step: step,
+    ms: Math.round(window.performance ? performance.now() : Date.now()),
+  };
+
+  if (extra) {
+    Object.keys(extra).forEach(function (key) {
+      payload[key] = extra[key];
+    });
+  }
+
+  console.log("CHECKOUT_TIMING", payload);
+}
+
+function ptAppendCheckoutTrace(form) {
+  var $form = $(form || "#payment_form");
+  if (!$form.length) {
+    return;
+  }
+
+  var $input = $form.find("input[name='checkout_trace']");
+  if (!$input.length) {
+    $input = $('<input type="hidden" name="checkout_trace">').appendTo($form);
+  }
+  $input.val(ptCheckoutTraceId);
+}
+
 function ptNormalizeAdaptivePaymentFields(form) {
   var $form = $(form || "#payment_form");
   if (!$form.length || !$(".adaptive-offer-page").length) {
@@ -96,6 +150,8 @@ function checkCaptcha(e) {
 function stripeIntentHandler(intent) {
   var form = document.getElementById("payment_form");
   ptNormalizeAdaptivePaymentFields(form);
+  ptAppendCheckoutTrace(form);
+  ptCheckoutTiming("final_submit_start", { mode: "intent" });
   var hiddenInput = document.createElement("input");
   hiddenInput.setAttribute("type", "hidden");
   hiddenInput.setAttribute("name", "stripeIntent");
@@ -128,6 +184,8 @@ function stripePaymentMethodHandler(id) {
 function stripeSubscriptionHandler(id) {
   var form = document.getElementById("payment_form");
   ptNormalizeAdaptivePaymentFields(form);
+  ptAppendCheckoutTrace(form);
+  ptCheckoutTiming("final_submit_start", { mode: "subscription" });
 
   // Add URL parameters to form data
   const urlParams = new URLSearchParams(window.location.search);
@@ -167,6 +225,8 @@ function stripeSubscriptionHandler(id) {
 function stripeSourceHandler(source) {
   // Insert the source ID into the form so it gets submitted to the server
   var form = document.getElementById("payment_form");
+  ptAppendCheckoutTrace(form);
+  ptCheckoutTiming("final_submit_start", { mode: "source" });
   var hiddenInput = document.createElement("input");
   hiddenInput.setAttribute("type", "hidden");
   hiddenInput.setAttribute("name", "stripeSource");
@@ -668,6 +728,8 @@ $().ready(function () {
         }
 
         ptNormalizeAdaptivePaymentFields(form);
+        ptAppendCheckoutTrace(form);
+        ptCheckoutTiming("payment_submit_start");
 
         // Debug: Check what data we're sending
         var formData = $(form).serializeArray();
@@ -680,15 +742,23 @@ $().ready(function () {
         });
 
         /* getting paymentIntentToken */
+        var paymentIntentAjaxStart = window.performance ? performance.now() : Date.now();
+        ptCheckoutTiming("payment_intent_ajax_start");
         $.ajax({
           url: ptCheckoutAjaxUrl("/backoffice/ajax/get_stripe_payment_intent.php"),
           data: $(form).serializeArray(),
           type: "POST",
           dataType: "json",
           success: function (data) {
+            ptCheckoutTiming("payment_intent_ajax_done", {
+              elapsed: Math.round((window.performance ? performance.now() : Date.now()) - paymentIntentAjaxStart),
+              res: data && data.res ? 1 : 0,
+            });
             /*console.log(data);*/
             if (data.res) {
               if (data.processing === "RECUR") {
+                var createPaymentMethodStart = window.performance ? performance.now() : Date.now();
+                ptCheckoutTiming("stripe_createPaymentMethod_start");
                 stripe
                   .createPaymentMethod({
                     type: "card",
@@ -698,6 +768,10 @@ $().ready(function () {
                     },
                   })
                   .then(function (result) {
+                    ptCheckoutTiming("stripe_createPaymentMethod_done", {
+                      elapsed: Math.round((window.performance ? performance.now() : Date.now()) - createPaymentMethodStart),
+                      res: result && !result.error ? 1 : 0,
+                    });
                     console.log(result);
                     if (result.error !== undefined) {
                       $("#card-errors").html(result.error.message).show();
@@ -732,13 +806,20 @@ $().ready(function () {
                       }
 
                       ptNormalizeAdaptivePaymentFields(form);
+                      ptAppendCheckoutTrace(form);
 
+                      var recurringAjaxStart = window.performance ? performance.now() : Date.now();
+                      ptCheckoutTiming("recurring_ajax_start");
                       $.ajax({
                         url: ptCheckoutAjaxUrl("/backoffice/ajax/get_recurring.php"),
                         data: $(form).serializeArray(),
                         type: "POST",
                         dataType: "json",
                         success: function (data) {
+                          ptCheckoutTiming("recurring_ajax_done", {
+                            elapsed: Math.round((window.performance ? performance.now() : Date.now()) - recurringAjaxStart),
+                            res: data && data.res ? 1 : 0,
+                          });
                           console.log(data);
                           if (data.res) {
                             if (data.subscription_obj) {
@@ -761,12 +842,18 @@ $().ready(function () {
                                     null !==
                                     data.subscription_obj.pending_setup_intent
                                   ) {
+                                    var confirmCardSetupStart = window.performance ? performance.now() : Date.now();
+                                    ptCheckoutTiming("stripe_confirmCardSetup_start");
                                     stripe
                                       .confirmCardSetup(
                                         data.subscription_obj
                                           .pending_setup_intent.client_secret
                                       )
                                       .then(function (result) {
+                                        ptCheckoutTiming("stripe_confirmCardSetup_done", {
+                                          elapsed: Math.round((window.performance ? performance.now() : Date.now()) - confirmCardSetupStart),
+                                          res: result && !result.error ? 1 : 0,
+                                        });
                                         if (result.error) {
                                           /* Show error to your customer (e.g., insufficient funds)*/
                                           $("#card-errors")
@@ -799,12 +886,18 @@ $().ready(function () {
                                   break;
                                 case "incomplete":
                                   console.log(data.subscription_obj);
+                                  var confirmCardPaymentStart = window.performance ? performance.now() : Date.now();
+                                  ptCheckoutTiming("stripe_confirmCardPayment_start", { mode: "subscription" });
                                   stripe
                                     .confirmCardPayment(
                                       data.subscription_obj.latest_invoice
                                         .payment_intent.client_secret
                                     )
                                     .then(function (result) {
+                                      ptCheckoutTiming("stripe_confirmCardPayment_done", {
+                                        elapsed: Math.round((window.performance ? performance.now() : Date.now()) - confirmCardPaymentStart),
+                                        res: result && !result.error ? 1 : 0,
+                                      });
                                       if (result.error) {
                                         /* Show error to your customer (e.g., insufficient funds)*/
                                         $("#card-errors")
@@ -858,10 +951,19 @@ $().ready(function () {
                             return;
                           }
                         },
+                        error: function () {
+                          ptCheckoutTiming("recurring_ajax_error", {
+                            elapsed: Math.round((window.performance ? performance.now() : Date.now()) - recurringAjaxStart),
+                          });
+                          $("#payment_form button[type='submit']").prop("disabled", false);
+                          $("#payment_form").removeClass("loading");
+                        },
                       });
                     }
                   });
               } else {
+                var oneTimeConfirmStart = window.performance ? performance.now() : Date.now();
+                ptCheckoutTiming("stripe_confirmCardPayment_start", { mode: "onetime" });
                 stripe
                   .confirmCardPayment(data.intent.client_secret, {
                     payment_method: {
@@ -870,6 +972,10 @@ $().ready(function () {
                     receipt_email: $("#pt_email").val(),
                   })
                   .then(function (result) {
+                    ptCheckoutTiming("stripe_confirmCardPayment_done", {
+                      elapsed: Math.round((window.performance ? performance.now() : Date.now()) - oneTimeConfirmStart),
+                      res: result && !result.error ? 1 : 0,
+                    });
                     /*console.log(result);*/
                     if (result.error) {
                       /* Show error to your customer (e.g., insufficient funds)*/
@@ -897,6 +1003,13 @@ $().ready(function () {
               $("#payment_form button[type='submit']").prop("disabled", false);
               $("#payment_form").removeClass("loading");
             }
+          },
+          error: function () {
+            ptCheckoutTiming("payment_intent_ajax_error", {
+              elapsed: Math.round((window.performance ? performance.now() : Date.now()) - paymentIntentAjaxStart),
+            });
+            $("#payment_form button[type='submit']").prop("disabled", false);
+            $("#payment_form").removeClass("loading");
           },
         });
 
@@ -1215,6 +1328,9 @@ function create_gpay_button(amount, description) {
     /* getting paymentIntentToken */
 
     stripeButtonHandler();
+    ptNormalizeAdaptivePaymentFields("#payment_form");
+    ptAppendCheckoutTrace("#payment_form");
+    ptCheckoutTiming("wallet_paymentmethod_start");
 
     // Add URL parameters to form data before sending to get_stripe_payment_intent.php
     const urlParams = new URLSearchParams(window.location.search);
@@ -1237,14 +1353,22 @@ function create_gpay_button(amount, description) {
       document.getElementById("payment_form").appendChild(sourceInput);
     }
 
+    var walletPaymentIntentAjaxStart = window.performance ? performance.now() : Date.now();
+    ptCheckoutTiming("wallet_payment_intent_ajax_start");
     $.ajax({
       url: ptCheckoutAjaxUrl("/backoffice/ajax/get_stripe_payment_intent.php"),
       data: $("#payment_form").serializeArray(),
       type: "POST",
       dataType: "json",
       success: function (data) {
+        ptCheckoutTiming("wallet_payment_intent_ajax_done", {
+          elapsed: Math.round((window.performance ? performance.now() : Date.now()) - walletPaymentIntentAjaxStart),
+          res: data && data.res ? 1 : 0,
+        });
         if (data.res) {
           // Confirm the PaymentIntent without handling potential next actions (yet).
+          var walletConfirmStart = window.performance ? performance.now() : Date.now();
+          ptCheckoutTiming("wallet_confirmCardPayment_start");
           stripe
             .confirmCardPayment(
               data.intent.client_secret,
@@ -1252,6 +1376,10 @@ function create_gpay_button(amount, description) {
               { handleActions: false }
             )
             .then(function (confirmResult) {
+              ptCheckoutTiming("wallet_confirmCardPayment_done", {
+                elapsed: Math.round((window.performance ? performance.now() : Date.now()) - walletConfirmStart),
+                res: confirmResult && !confirmResult.error ? 1 : 0,
+              });
               if (confirmResult.error) {
                 // Report to the browser that the payment failed, prompting it to
                 // re-show the payment interface, or show an error message and close
@@ -1268,9 +1396,15 @@ function create_gpay_button(amount, description) {
                 // instead check for: `paymentIntent.status === "requires_source_action"`.
                 if (confirmResult.paymentIntent.status === "requires_action") {
                   // Let Stripe.js handle the rest of the payment flow.
+                  var walletActionStart = window.performance ? performance.now() : Date.now();
+                  ptCheckoutTiming("wallet_confirmCardPayment_action_start");
                   stripe
                     .confirmCardPayment(clientSecret)
                     .then(function (result) {
+                      ptCheckoutTiming("wallet_confirmCardPayment_action_done", {
+                        elapsed: Math.round((window.performance ? performance.now() : Date.now()) - walletActionStart),
+                        res: result && !result.error ? 1 : 0,
+                      });
                       if (result.error) {
                         // The payment failed -- ask your customer for a new payment method.
                         alert(result.error);
@@ -1289,6 +1423,11 @@ function create_gpay_button(amount, description) {
         } else {
           alert(res.msg);
         }
+      },
+      error: function () {
+        ptCheckoutTiming("wallet_payment_intent_ajax_error", {
+          elapsed: Math.round((window.performance ? performance.now() : Date.now()) - walletPaymentIntentAjaxStart),
+        });
       },
     });
   });

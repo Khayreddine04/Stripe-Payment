@@ -840,12 +840,15 @@ if (!empty($invoice) && $https) {
 
 
 if ($pt_action == 'do_payment') {
+    $checkoutFinalTimingStart = microtime(true);
+    pt_checkout_timing_log('final_post_start', null, array('file' => 'index.php'));
     // Get click ID from either 'clickid' or 'cid' parameter
     $clickid = !empty($_GET['clickid']) ? $_GET['clickid'] : (!empty($_GET['cid']) ? $_GET['cid'] : '');
     $source = !empty($_GET['source']) ? $_GET['source'] : '';
 
     if ($c->checkCaptcha()) {
         $paymentResult = $payment->doPayment();
+        pt_checkout_timing_log('final_doPayment', $checkoutFinalTimingStart, array('file' => 'index.php', 'res' => $paymentResult === true ? '1' : '0'));
         if ($paymentResult === true) {
             $show_form = false;
             if ($pt_type != 'paypal') {
@@ -862,6 +865,7 @@ if ($pt_action == 'do_payment') {
                         $redirectUrl .= $separator . 'source=' . urlencode($source);
                     }
                     error_log("Redirecting to: " . $redirectUrl);
+                    pt_checkout_timing_log('final_redirect', $checkoutFinalTimingStart, array('file' => 'index.php'));
                     header('Location: ' . $redirectUrl);
                     exit();
                 } else {
@@ -883,6 +887,7 @@ if ($pt_action == 'do_payment') {
 
                     $redirectUrl = 'payment_confirmation.php?' . http_build_query($submit_data);
                     error_log("Redirecting to: " . $redirectUrl);
+                    pt_checkout_timing_log('final_redirect', $checkoutFinalTimingStart, array('file' => 'index.php'));
                     header('Location: ' . $redirectUrl);
                     exit();
                 }

@@ -13,6 +13,8 @@
 include_once "../../includes/bootstrap.php";
 pt_send_checkout_cors_headers();
 header('Content-Type: application/json; charset=utf-8');
+$checkoutTimingStart = microtime(true);
+pt_checkout_timing_log('recurring_endpoint_start', null, array('file' => 'get_recurring.php'));
 
 // Ensure session is started
 if (session_status() === PHP_SESSION_NONE) {
@@ -78,6 +80,7 @@ $pt_service_for_currency = $c->_esc("pt_service", $c->_esc("service"));
 $pt_ctc_for_currency = $c->_esc("pt_ctc");
 
 // Extract API currency data from session and override POST data if available
+$currencyTimingStart = microtime(true);
 $api_currency_data = $_SESSION['api_currency_data'] ?? null;
 $api_currency_data = pt_ajax_currency_session_matches_checkout($api_currency_data, $pt_service_for_currency, $pt_ctc_for_currency) ? $api_currency_data : null;
 
@@ -134,6 +137,7 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
         pt_ajax_apply_payment_amounts($amount, $currency, $upfront_fee);
     }
 }
+pt_checkout_timing_log('recurring_currency_ready', $currencyTimingStart, array('currency' => $pt_currency, 'amount' => $pt_amount));
 
 
 $pt_type = $c->_esc( "pt_type", "card" );
@@ -185,11 +189,12 @@ if($pt_shipping_same=='y') {
 	$pt_country_s = $c->_esc("pt_country_s");
 }
 
-$response = array( "res" => false, "msg" => "", "intent" => 0 );
+$response = array( "res" => false, "msg" => "", "intent" => 0, "checkout_trace" => pt_checkout_timing_trace() );
 $payment  = new PT_Stripe_Payment();
 
 
 
+$subscriptionTimingStart = microtime(true);
 if ( $payment->setupSubscription() ) {
 	//PT_Core::_dump($payment);
 	$response['subscription_obj']      = $payment->subscription_obj;
@@ -197,5 +202,7 @@ if ( $payment->setupSubscription() ) {
 } else {
 	$response['msg'] = $payment->error;
 }
+pt_checkout_timing_log('recurring_setupSubscription', $subscriptionTimingStart, array('res' => $response['res'] ? '1' : '0'));
+pt_checkout_timing_log('recurring_endpoint_total', $checkoutTimingStart, array('res' => $response['res'] ? '1' : '0'));
 
 echo json_encode( $response );

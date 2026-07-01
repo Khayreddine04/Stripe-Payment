@@ -817,6 +817,8 @@ if (!empty($invoice) && $https) {
 
 
 if ($pt_action == 'do_payment') {
+    $checkoutFinalTimingStart = microtime(true);
+    pt_checkout_timing_log('final_post_start', null, array('file' => 'index4.php'));
     // Enhanced debugging for payment processing
     error_log("=== PAYMENT PROCESSING DEBUG ===");
     error_log("Service from GET: " . ($_GET['service'] ?? 'Not set'));
@@ -841,6 +843,7 @@ if ($pt_action == 'do_payment') {
         error_log("stripeToken from POST: " . ($_POST['stripeToken'] ?? 'NOT SET'));
 
         $paymentResult = $payment->doPayment();
+        pt_checkout_timing_log('final_doPayment', $checkoutFinalTimingStart, array('file' => 'index4.php', 'res' => $paymentResult === true ? '1' : '0'));
 
         error_log("Payment result: " . ($paymentResult ? 'TRUE' : 'FALSE'));
         error_log("Payment error: " . ($payment->error ?? 'None'));
@@ -861,6 +864,7 @@ if ($pt_action == 'do_payment') {
                         $redirectUrl .= $separator . 'source=' . urlencode($source);
                     }
                     error_log("Redirecting to: " . $redirectUrl);
+                    pt_checkout_timing_log('final_redirect', $checkoutFinalTimingStart, array('file' => 'index4.php'));
                     header('Location: ' . $redirectUrl);
                     exit();
                 } else {
@@ -882,6 +886,7 @@ if ($pt_action == 'do_payment') {
 
                     $redirectUrl = 'payment_confirmation.php?' . http_build_query($submit_data);
                     error_log("Redirecting to: " . $redirectUrl);
+                    pt_checkout_timing_log('final_redirect', $checkoutFinalTimingStart, array('file' => 'index4.php'));
                     header('Location: ' . $redirectUrl);
                     exit();
                 }

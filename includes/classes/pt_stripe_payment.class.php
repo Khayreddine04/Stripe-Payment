@@ -54,6 +54,8 @@ class PT_Stripe_Payment extends PT_Payment
 
     public $gateway_profile = null;
 
+    private $checkout_trace_id = '';
+
     function __construct()
     {
         parent::__construct();
@@ -65,6 +67,33 @@ class PT_Stripe_Payment extends PT_Payment
         }
         $this->applyGatewayFromRequest();
         $this->setStripeAppInfo();
+        $this->checkout_trace_id = $_REQUEST['checkout_trace'] ?? $_REQUEST['checkout_trace_id'] ?? '';
+        if ($this->checkout_trace_id === '') {
+            $this->checkout_trace_id = substr(hash('sha256', session_id() . '|' . microtime(true)), 0, 12);
+        }
+    }
+
+    private function timingStart()
+    {
+        return microtime(true);
+    }
+
+    private function timingLog($step, $startedAt, $extra = array())
+    {
+        $ms = round((microtime(true) - $startedAt) * 1000, 2);
+        $parts = array(
+            'step=' . $step,
+            'ms=' . $ms,
+            'trace=' . $this->checkout_trace_id
+        );
+
+        foreach ($extra as $key => $value) {
+            if (is_scalar($value) || $value === null) {
+                $parts[] = $key . '=' . (string)$value;
+            }
+        }
+
+        PT_Core::_error_log('CHECKOUT_TIMING ' . implode(' ', $parts));
     }
 
     public function setGatewayProfile($gateway)
@@ -295,9 +324,11 @@ class PT_Stripe_Payment extends PT_Payment
         \Stripe\Stripe::setApiKey($this->secret_key);
         $this->addServiceFee();
         try {
+            $timer = $this->timingStart();
             $intent = \Stripe\SetupIntent::create([
                 'payment_method_types' => ['card'],
             ]);
+            $this->timingLog('stripe_setup_intent_create', $timer);
 
             $this->setup_intent = $intent;
             return true;
@@ -384,6 +415,7 @@ class PT_Stripe_Payment extends PT_Payment
             /* Create Plan if does not exists */
             PT_Core::_error_log("Creating Stripe Plan with currency: " . $this->currency);
             try {
+                $timer = $this->timingStart();
                 \Stripe\Plan::create(
                     array(
                         "amount" => $calculated_amount * 100,
@@ -397,11 +429,13 @@ class PT_Stripe_Payment extends PT_Payment
                         "id" => $planName
                     )
                 );
+                $this->timingLog('stripe_plan_create', $timer, array('currency' => $this->currency));
             } catch (Exception $p) {
                 if ($p->getError()->code != 'resource_already_exists') {
                     $this->error = $p->getMessage();
                     return false;
                 }
+                $this->timingLog('stripe_plan_exists', $timer ?? $this->timingStart(), array('currency' => $this->currency));
             }
 
             $stripeCustomer = st_apply_filter('set_stripe_customer', '');
@@ -448,6 +482,7 @@ class PT_Stripe_Payment extends PT_Payment
                     if (empty($payment_method))
                         throw new Exception("The Stripe Payment Method was not generated correctly");
 
+                    $timer = $this->timingStart();
                     $customer = \Stripe\Customer::create(
                         array(
                             "payment_method" => $payment_method,
@@ -456,6 +491,7 @@ class PT_Stripe_Payment extends PT_Payment
                             "metadata" => $meta_data
                         )
                     );
+                    $this->timingLog('stripe_customer_create', $timer);
 
                     $stripeCustomer = $customer->id;
                 } catch (Exception $e) {
@@ -468,11 +504,14 @@ class PT_Stripe_Payment extends PT_Payment
                         throw new Exception("The Stripe Payment method was not generated correctly");
 
                     $stripe = new \Stripe\StripeClient($this->secret_key);
+                    $timer = $this->timingStart();
                     $stripe->paymentMethods->attach(
                         $payment_method,
                         ['customer' => $stripeCustomer]
                     );
+                    $this->timingLog('stripe_payment_method_attach', $timer);
 
+                    $timer = $this->timingStart();
                     $customer = \Stripe\Customer::update(
                         $stripeCustomer,
                         array(
@@ -481,6 +520,7 @@ class PT_Stripe_Payment extends PT_Payment
                             "metadata" => $meta_data
                         )
                     );
+                    $this->timingLog('stripe_customer_update', $timer);
                     $stripeCustomer = $customer->id;
                 } catch (Exception $e) {
                     $this->error = $e->getMessage();
@@ -499,19 +539,23 @@ class PT_Stripe_Payment extends PT_Payment
                     if ($upfrontFee > 0) {
                         PT_Core::_error_log("Creating upfront fee invoice item: $" . (float)$upfrontFee);
 
+                        $timer = $this->timingStart();
                         $invoiceItem = \Stripe\InvoiceItem::create([
                             'customer' => $stripeCustomer,
                             'amount' => (float)$upfrontFee * 100,
                             'currency' => strtolower($this->currency),
                             'description' => 'Upfront fee for ' . $this->service_name,
                         ]);
+                        $this->timingLog('stripe_invoice_item_create', $timer, array('currency' => $this->currency));
 
+                        $timer = $this->timingStart();
                         $invoice = \Stripe\Invoice::create([
                             'customer' => $stripeCustomer,
                             'auto_advance' => true, // Automatically finalize and attempt payment
                             'collection_method' => 'charge_automatically',
                             'default_payment_method' => $payment_method,
                         ]);
+                        $this->timingLog('stripe_invoice_create', $timer);
 
 
                         PT_Core::_error_log("Created invoice item: " . $invoiceItem->id);
@@ -535,7 +579,9 @@ class PT_Stripe_Payment extends PT_Payment
                     }
 
                     // Create the subscription
+                    $timer = $this->timingStart();
                     $subscription = \Stripe\Subscription::create($subscriptionData);
+                    $this->timingLog('stripe_subscription_create', $timer, array('currency' => $this->currency));
                     PT_Core::_error_log("Subscription created: " . $subscription->id);
 
                     // If there's an upfront fee, we need to check for immediate payment
@@ -544,7 +590,9 @@ class PT_Stripe_Payment extends PT_Payment
 
                         try {
                             // Retrieve the latest invoice which should contain the upfront fee
+                            $timer = $this->timingStart();
                             $latestInvoice = \Stripe\Invoice::retrieve($subscription->latest_invoice);
+                            $this->timingLog('stripe_latest_invoice_retrieve', $timer);
 
                             if ($latestInvoice && $latestInvoice->status === 'paid') {
                                 PT_Core::_error_log("Upfront fee invoice found and paid: " . $latestInvoice->id);
@@ -563,10 +611,12 @@ class PT_Stripe_Payment extends PT_Payment
                     }
 
                     // Retrieve the subscription with expanded details
+                    $timer = $this->timingStart();
                     $new_subscription = \Stripe\Subscription::retrieve([
                         'id' => $subscription->id,
                         'expand' => ['latest_invoice', 'latest_invoice.payment_intent', 'pending_setup_intent']
                     ]);
+                    $this->timingLog('stripe_subscription_retrieve', $timer);
 
                     $this->subscription_id = $subscription->id;
                     $this->subscription_obj = $new_subscription;
@@ -636,11 +686,13 @@ class PT_Stripe_Payment extends PT_Payment
                 $tax_amount = 0;
             }
 
+            $timer = $this->timingStart();
             $intent = \Stripe\PaymentIntent::create(array(
                 "amount" => $calculated_amount,
                 "currency" => $this->currency,
                 "description" => $this->getPaymentDescription(false)
             ));
+            $this->timingLog('stripe_payment_intent_create', $timer, array('currency' => $this->currency));
 
             $this->intent = $intent;
             return true;
@@ -668,9 +720,11 @@ class PT_Stripe_Payment extends PT_Payment
             try {
                 if (!empty($post['stripeToken']) || !empty($post['stripeIntent'])) {
                     if (isset($post['stripeIntent'])) {
+                        $timer = $this->timingStart();
                         $responsePI = \Stripe\PaymentIntent::retrieve(
                             $post['stripeIntent']
                         );
+                        $this->timingLog('stripe_payment_intent_retrieve', $timer);
                         if ($responsePI->status === 'succeeded') {
                             $this->trn_id = $responsePI->id;
 
@@ -1028,7 +1082,7 @@ class PT_Stripe_Payment extends PT_Payment
                     'status' => "active",
                     'trial_days' => $this->trial_period,
                     'stripeCustomer' => $stripeCustomer,
-                    'payment_method' => $this->core->post['payment_method']
+                    'payment_method' => $this->core->post['payment_method'] ?? ($post['payment_method'] ?? '')
                 );
                 $subscription_data = array_merge($subscription_data, $this->getGatewayRecordFields());
 
@@ -1048,7 +1102,9 @@ class PT_Stripe_Payment extends PT_Payment
                     $subscription_data['period_count'] = $this->periods_count;
                 }
 
+                $timer = $this->timingStart();
                 $subscription_id = $subscriptionModel->addSubscription($subscription_data);
+                $this->timingLog('local_subscription_add', $timer, array('idSubscription' => $subscription_id));
 
                 PT_Core::_error_log("Subscription created with ID: " . $subscription_id);
 
