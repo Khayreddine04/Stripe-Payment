@@ -355,6 +355,8 @@ class PT_Core extends PT_Db{
 		require_once HOME_DIR . "/includes/classes/phpmailer/src/SMTP.php";
 		require_once HOME_DIR . "/includes/classes/phpmailer/src/Exception.php";
 		$mail = new PHPMailer( true );
+		$mail->Timeout = 5;
+		$mail->SMTPKeepAlive = false;
 
 		try {
 			//Server settings
@@ -437,6 +439,8 @@ class PT_Core extends PT_Db{
 	         require_once HOME_DIR . "/includes/classes/phpmailer/src/SMTP.php";
 	         require_once HOME_DIR . "/includes/classes/phpmailer/src/Exception.php";
 	         $mail = new PHPMailer(true);
+	         $mail->Timeout = 5;
+	         $mail->SMTPKeepAlive = false;
 
 	         try {
 		         //Server settings

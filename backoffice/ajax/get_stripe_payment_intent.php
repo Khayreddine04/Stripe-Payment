@@ -13,8 +13,6 @@
 include_once "../../includes/bootstrap.php";
 pt_send_checkout_cors_headers();
 header('Content-Type: application/json; charset=utf-8');
-$checkoutTimingStart = microtime(true);
-pt_checkout_timing_log('payment_intent_endpoint_start', null, array('file' => 'get_stripe_payment_intent.php'));
 
 // Ensure session is started
 if (session_status() === PHP_SESSION_NONE) {
@@ -94,10 +92,9 @@ $idInvoice = $c->_esc( "idInvoice", 0 );
 $stripeButton = $c->_esc("stripeButton", 'n');
 $pt_ctc = $c->_esc("pt_ctc");
 
-$response = array( "res" => false, "msg" => "", "intent" => 0, "checkout_trace" => pt_checkout_timing_trace() );
+$response = array( "res" => false, "msg" => "", "intent" => 0 );
 
 // Extract API currency data from session and override POST data if available
-$currencyTimingStart = microtime(true);
 $api_currency_data = $_SESSION['api_currency_data'] ?? null;
 $api_currency_data = pt_ajax_currency_session_matches_checkout($api_currency_data, $pt_service, $pt_ctc) ? $api_currency_data : null;
 
@@ -167,11 +164,9 @@ if ($api_currency_data && isset($api_currency_data['subscription_amount']['amoun
         pt_ajax_apply_payment_amounts($amount, $currency, $upfront_fee);
     }
 }
-pt_checkout_timing_log('payment_intent_currency_ready', $currencyTimingStart, array('currency' => $pt_currency, 'amount' => $pt_amount));
 
 $payment = new PT_Stripe_Payment();
 
-$paymentIntentTimingStart = microtime(true);
 if ( $payment->getPaymentIntent() ) {
     //PT_Core::_dump($payment);
     $response['intent']      = $payment->intent;
@@ -181,7 +176,5 @@ if ( $payment->getPaymentIntent() ) {
 } else {
     $response['msg'] = $payment->error;
 }
-pt_checkout_timing_log('payment_intent_getPaymentIntent', $paymentIntentTimingStart, array('res' => $response['res'] ? '1' : '0'));
-pt_checkout_timing_log('payment_intent_endpoint_total', $checkoutTimingStart, array('res' => $response['res'] ? '1' : '0'));
 
 echo json_encode( $response );

@@ -436,39 +436,6 @@ if (!function_exists('pt_send_checkout_cors_headers')) {
     }
 }
 
-if (!function_exists('pt_checkout_timing_trace')) {
-    function pt_checkout_timing_trace()
-    {
-        $trace = $_REQUEST['checkout_trace'] ?? $_REQUEST['checkout_trace_id'] ?? '';
-        if ($trace === '') {
-            $seed = session_id() . '|' . ($_SERVER['REQUEST_TIME_FLOAT'] ?? microtime(true));
-            $trace = substr(hash('sha256', $seed), 0, 12);
-        }
-
-        return preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$trace);
-    }
-}
-
-if (!function_exists('pt_checkout_timing_log')) {
-    function pt_checkout_timing_log($step, $startedAt = null, $extra = array())
-    {
-        $ms = $startedAt === null ? 0 : round((microtime(true) - (float)$startedAt) * 1000, 2);
-        $parts = array(
-            'step=' . preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$step),
-            'ms=' . $ms,
-            'trace=' . pt_checkout_timing_trace()
-        );
-
-        foreach ($extra as $key => $value) {
-            if (is_scalar($value) || $value === null) {
-                $parts[] = preg_replace('/[^a-zA-Z0-9_\-]/', '', (string)$key) . '=' . (string)$value;
-            }
-        }
-
-        error_log('CHECKOUT_TIMING ' . implode(' ', $parts));
-    }
-}
-
 if (!function_exists('pt_get_inactive_checkout_domains')) {
     function pt_get_inactive_checkout_domains()
     {

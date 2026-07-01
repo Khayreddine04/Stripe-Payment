@@ -249,6 +249,10 @@ body.has-offer .offer-page {
 }
 
 .primary-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   width: 100%;
   height: 30px;
   margin-top: 14px;
@@ -261,8 +265,34 @@ body.has-offer .offer-page {
   letter-spacing: 0;
 }
 
+.primary-button:disabled {
+  cursor: wait;
+  opacity: .86;
+}
+
+.adaptive-button-spinner {
+  display: none;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(255, 255, 255, .45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: adaptive-button-spin .7s linear infinite;
+}
+
+#payment_form.loading .adaptive-button-spinner,
+.primary-button.is-loading .adaptive-button-spinner {
+  display: inline-block;
+}
+
+@keyframes adaptive-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .adaptive-submit-amount {
-  margin-left: 6px;
+  margin-left: 0;
 }
 
 .adaptive-card-fields {

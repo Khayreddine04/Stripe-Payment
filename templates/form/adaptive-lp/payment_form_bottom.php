@@ -33,7 +33,8 @@ $basePath = 'templates/form/adaptive-lp';
 <?php } ?>
 
 <button class="primary-button" type="submit" id="form_submit_button" <?php echo ($use_recaptcha == 'y') ? "disabled" : "" ?>>
-    <span data-i18n="complete_payment">Complete Payment</span>
+    <span class="adaptive-button-spinner" aria-hidden="true"></span>
+    <span class="adaptive-button-label" data-i18n="complete_payment">Complete Payment</span>
     <span class="adaptive-submit-amount">
         <span class="adaptive-upfront-currency-symbol"><?php echo $upfrontCurrencySymbolValue; ?></span><span class="adaptive-upfront-amount"><?php echo $upfrontAmountValue; ?></span>
     </span>
