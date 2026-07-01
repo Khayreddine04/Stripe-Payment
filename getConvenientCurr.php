@@ -194,6 +194,20 @@ if (empty($country) || empty($ctc)) {
     ]));
 }
 
+$cacheKey = $country . '|' . $ctc . '|' . $serviceId;
+$cachedCurrencyData = $_SESSION['api_currency_data'] ?? null;
+if (
+    is_array($cachedCurrencyData)
+    && (($cachedCurrencyData['_cache_key'] ?? '') === $cacheKey)
+    && !empty($cachedCurrencyData['_cached_at'])
+    && (time() - (int)$cachedCurrencyData['_cached_at'] < 3600)
+) {
+    logError('getConvenientCurr.php: Returning cached currency response for ' . $cacheKey);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($cachedCurrencyData, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+}
+
 try {
     error_log('getConvenientCurr.php: Inside try block');
     // Google Sheets Configuration
@@ -281,7 +295,9 @@ try {
             'period' => $period  // Dynamic value from the database
         ],
         'service_id' => $serviceId,
-        'item_updated' => false
+        'item_updated' => false,
+        '_cache_key' => $cacheKey,
+        '_cached_at' => time()
     ];
 
     // Store data in session

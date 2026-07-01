@@ -21,6 +21,33 @@ function ptCheckoutAjaxUrl(path) {
   }
 }
 
+function ptNormalizeAdaptivePaymentFields(form) {
+  var $form = $(form || "#payment_form");
+  if (!$form.length || !$(".adaptive-offer-page").length) {
+    return;
+  }
+
+  var amount = $form.find("#pt_amount").last().val();
+  var currency = $form.find("#pt_currency").last().val();
+  var country = $form.find("#pt_country").last().val();
+  var symbol = $form.find("input[name='pt_currency_symbol']").last().val();
+  var position = $form.find("input[name='pt_currency_position']").last().val() || "before";
+
+  if (amount !== undefined && amount !== "") {
+    $form.find("input[name='amount'], input[name='pt_amount']").val(amount);
+  }
+  if (currency !== undefined && currency !== "") {
+    $form.find("input[name='currency'], input[name='pt_currency']").val(currency);
+  }
+  if (country !== undefined && country !== "") {
+    $form.find("input[name='pt_country'], select[name='country']").val(country);
+  }
+  if (symbol !== undefined) {
+    $form.find("input[name='pt_currency_symbol']").val(symbol);
+  }
+  $form.find("input[name='pt_currency_position']").val(position);
+}
+
 // Progress Bar State Management
 function updateProgressBar(step) {
   const progressBar = document.querySelector(".progressbar");
@@ -68,6 +95,7 @@ function checkCaptcha(e) {
 
 function stripeIntentHandler(intent) {
   var form = document.getElementById("payment_form");
+  ptNormalizeAdaptivePaymentFields(form);
   var hiddenInput = document.createElement("input");
   hiddenInput.setAttribute("type", "hidden");
   hiddenInput.setAttribute("name", "stripeIntent");
@@ -99,6 +127,7 @@ function stripePaymentMethodHandler(id) {
 
 function stripeSubscriptionHandler(id) {
   var form = document.getElementById("payment_form");
+  ptNormalizeAdaptivePaymentFields(form);
 
   // Add URL parameters to form data
   const urlParams = new URLSearchParams(window.location.search);
@@ -126,6 +155,7 @@ function stripeSubscriptionHandler(id) {
   hiddenInput.setAttribute("name", "subscription_id");
   hiddenInput.setAttribute("value", id);
   form.appendChild(hiddenInput);
+  ptNormalizeAdaptivePaymentFields(form);
   form.submit();
 }
 
@@ -582,12 +612,13 @@ $().ready(function () {
       const clickid = urlParams.get("clickid");
       const source = urlParams.get("source");
 
-      if (
-        $("input#pt_type1").is(":checked") ||
-        $("input#pt_type3").is(":checked")
-      ) {
+        if (
+          $("input#pt_type1").is(":checked") ||
+          $("input#pt_type3").is(":checked")
+        ) {
+          ptNormalizeAdaptivePaymentFields(form);
 
-        if (clickid) {
+          if (clickid) {
           const clickidInput = document.createElement("input");
           clickidInput.setAttribute("type", "hidden");
           clickidInput.setAttribute("name", "clickid");
@@ -603,8 +634,8 @@ $().ready(function () {
           form.appendChild(sourceInput);
         }
 
-        form.submit();
-      } else {
+          form.submit();
+        } else {
         // Disable submit button
         $("#payment_form button[type='submit']").prop("disabled", true);
         $("#payment_form").addClass("loading");
@@ -635,6 +666,8 @@ $().ready(function () {
           sourceInput.setAttribute("value", source);
           form.appendChild(sourceInput);
         }
+
+        ptNormalizeAdaptivePaymentFields(form);
 
         // Debug: Check what data we're sending
         var formData = $(form).serializeArray();
@@ -695,8 +728,10 @@ $().ready(function () {
                         sourceInput.setAttribute("type", "hidden");
                         sourceInput.setAttribute("name", "source");
                         sourceInput.setAttribute("value", source);
-                        form.appendChild(sourceInput);
+                       form.appendChild(sourceInput);
                       }
+
+                      ptNormalizeAdaptivePaymentFields(form);
 
                       $.ajax({
                         url: ptCheckoutAjaxUrl("/backoffice/ajax/get_recurring.php"),

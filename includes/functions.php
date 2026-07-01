@@ -128,6 +128,24 @@ function getConvenientCurrencyData($countryCode, $ctc, $serviceId) {
     curl_setopt($ch, CURLOPT_URL, $full_url);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false); // Should be true in production
+    $forwardedFor = $_SERVER['HTTP_X_FORWARDED_FOR']
+        ?? $_SERVER['HTTP_X_REAL_IP']
+        ?? $_SERVER['REMOTE_ADDR']
+        ?? '';
+    $headers = [];
+    if ($forwardedFor !== '') {
+        $headers[] = 'X-Forwarded-For: ' . $forwardedFor;
+        $headers[] = 'X-Real-IP: ' . trim(explode(',', $forwardedFor)[0]);
+    }
+    if (!empty($_SERVER['HTTP_USER_AGENT'])) {
+        $headers[] = 'User-Agent: ' . $_SERVER['HTTP_USER_AGENT'];
+    }
+    if (!empty($_SERVER['HTTP_COOKIE'])) {
+        $headers[] = 'Cookie: ' . $_SERVER['HTTP_COOKIE'];
+    }
+    if (!empty($headers)) {
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+    }
     // Fail fast so checkout rendering is never blocked by this helper.
     curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 1);
     curl_setopt($ch, CURLOPT_TIMEOUT, 2);

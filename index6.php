@@ -939,11 +939,6 @@ if ($https) {
                 <input type="hidden" name="productname" value="<?php echo htmlspecialchars(urldecode($_GET['productname'] ?? ''), ENT_QUOTES); ?>">
                 <input type="hidden" name="price" value="<?php echo htmlspecialchars(urldecode($_GET['price'] ?? ''), ENT_QUOTES); ?>">
 
-                <div style="display:none">
-                    <?php $order_info->render(true) ?>
-                    <?php $payment_type->render(true) ?>
-                </div>
-
                 <?php $payment_info->render(true); ?>
                 <?php $bottom_info->render(true); ?>
             </form>
